@@ -1,0 +1,12 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+.cursorignore
+.cursorindexingignore
+db.sqlite3
+*.sqlite3
+.venv/
+.env/
+*.env
