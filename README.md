@@ -1,7 +1,7 @@
 ## you can use it where you need 2 type of user. ( superuser and visitor)
 
 
-![UI Screenshot](/img/UI.png)
+![UI Screenshot](img/UI.png)
 
 ### Getting Started
 
