@@ -13,7 +13,7 @@ schema_view = get_schema_view (
     openapi.Info (
         title="Django Rest Framework", 
         default_version="0.0.1", 
-        description="This API is for authenticate users",
+        description="This API is for Ecommerce App Backend",
     ),
     public=True, 
     permission_classes=(permissions.AllowAny,),
