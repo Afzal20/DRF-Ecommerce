@@ -207,3 +207,11 @@ class OrderItem(models.Model):
 
     def __str__(self):
         return f"{self.product} in Order {self.order.id}"
+    
+
+class HeroSection(models.Model):
+    title = models.CharField(max_length=255)
+    offer = models.CharField(max_length=255)
+    button_1_Text = models.CharField(max_length=20)
+    button_2_Text = models.CharField(max_length=20)
+    image = models.ImageField(upload_to='HeroSection/')

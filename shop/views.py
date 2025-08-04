@@ -8,8 +8,8 @@ from rest_framework.authentication import TokenAuthentication
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.generics import ListAPIView, DestroyAPIView
-from .models import Cart, ContactMessage
-from .serializers import CartSerializer, AddToCartSerializer, ContactMessageSerializer
+from .models import Cart, ContactMessage, HeroSection
+from .serializers import CartSerializer, AddToCartSerializer, ContactMessageSerializer, HeroSectionSerializer
 from rest_framework import generics
 from .serializers import ProductSerializer
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
@@ -223,7 +223,15 @@ def serve_media(request, path):
             return response
     else:
         raise Http404("Media file not found")
-    
+
+
+class HeroSectionViewSet(viewsets.ModelViewSet):
+    queryset = HeroSection.objects.all()
+    serializer_class = HeroSectionSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
+    def get_queryset(self):
+        return HeroSection.objects.all()
 
 def index(request):
     return render(request, 'index.html')

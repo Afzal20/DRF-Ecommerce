@@ -1,0 +1,5 @@
+{
+    "terminal.integrated.tabs.defaultIcon": "terminal",
+    "terminal.integrated.suggest.windowsExecutableExtensions": {},
+    "terminal.integrated.defaultProfile.windows": "Git Bash"
+}

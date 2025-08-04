@@ -1,7 +1,7 @@
 from django.core.validators import RegexValidator
 from rest_framework import serializers
 from .models import (
-    ContactMessage, Districts, Category, ItemType, OrderItem, Size, Rating, Color,
+    ContactMessage, Districts, Category, HeroSection, ItemType, OrderItem, Size, Rating, Color,
     Item, ItemImage, ItemSize, ItemColor, Cart, Order,
     Slider, BillingAddress, Payment, Coupon, Refund
 )
@@ -194,3 +194,10 @@ class OrderSerializer(serializers.ModelSerializer):
             OrderItem.objects.create(order=order, **item_data)
 
         return order
+
+
+class HeroSectionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = HeroSection
+        fields = ['id', 'title', 'offer', 'button_1_Text', 'button_2_Text', 'image']
+        read_only_fields = ['id'] 
