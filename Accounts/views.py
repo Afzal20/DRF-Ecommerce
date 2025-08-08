@@ -91,27 +91,29 @@ class UserLoginView(APIView):
                 'email': user.email,
                 'first_name': user.first_name,
                 'last_name': user.last_name,
-            }
+            },
+            'access_token': str(access_token),
+            'refresh_token': str(refresh)
         }, status=status.HTTP_200_OK)
 
-        # Set tokens in HTTP-only cookies
-        response.set_cookie(
-            key='access_token',
-            value=str(access_token),
-            httponly=True,
-            secure=True,
-            samesite='None',
-            path='/',
-        )
+        # # Set tokens in HTTP-only cookies
+        # response.set_cookie(
+        #     key='access_token',
+        #     value=str(access_token),
+        #     httponly=True,
+        #     secure=True,
+        #     samesite='None',
+        #     path='/',
+        # )
 
-        response.set_cookie(
-            key='refresh_token',
-            value=str(refresh),
-            httponly=True,
-            secure=True,
-            samesite='None',
-            path='/',
-        )
+        # response.set_cookie(
+        #     key='refresh_token',
+        #     value=str(refresh),
+        #     httponly=True,
+        #     secure=True,
+        #     samesite='None',
+        #     path='/',
+        # )
 
         return response
 
@@ -161,26 +163,36 @@ class CustomTokenRefreshView(TokenRefreshView):
         access_token = serializer.validated_data.get('access')
         new_refresh_token = serializer.validated_data.get('refresh', refresh_token)  # use new if provided
 
-        response = Response({'detail': 'Token refreshed successfully'})
+        response = Response({
+            'message': 'Login successful',
+            'user': {
+                'id': user.id,
+                'email': user.email,
+                'first_name': user.first_name,
+                'last_name': user.last_name,
+            },
+            'access_token': str(access_token),
+            'new_refresh_token': str(new_refresh_token)
+        }, status=status.HTTP_200_OK)
 
         # Set tokens in HTTP-only cookies
-        response.set_cookie(
-            key='access_token',
-            value=access_token,
-            httponly=True,
-            secure=True,  # Only over HTTPS in production
-            samesite='Lax',
-            max_age=60 * 5,  # adjust to match your access token lifetime
-        )
+        # response.set_cookie(
+        #     key='access_token',
+        #     value=access_token,
+        #     httponly=True,
+        #     secure=True,  # Only over HTTPS in production
+        #     samesite='Lax',
+        #     max_age=60 * 5,  # adjust to match your access token lifetime
+        # )
 
-        response.set_cookie(
-            key='refresh_token',
-            value=new_refresh_token,
-            httponly=True,
-            secure=True,
-            samesite='Lax',
-            max_age=60 * 60 * 24 * 7,  # adjust to match your refresh token lifetime
-        )
+        # response.set_cookie(
+        #     key='refresh_token',
+        #     value=new_refresh_token,
+        #     httponly=True,
+        #     secure=True,
+        #     samesite='Lax',
+        #     max_age=60 * 60 * 24 * 7,  # adjust to match your refresh token lifetime
+        # )
 
         return response
     
