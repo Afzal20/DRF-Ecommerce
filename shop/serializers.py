@@ -1,75 +1,14 @@
 from django.core.validators import RegexValidator
 from rest_framework import serializers
 from .models import (
-    ContactMessage, Districts, Category, HeroSection, ItemType, OrderItem, Size, Rating, Color,
-    Item, ItemImage, ItemSize, ItemColor, Cart, Order,
-    Slider, BillingAddress, Payment, Coupon, Refund
+    ContactMessage, Districts, HeroSection, OrderItem, Cart, Order,
+    Slider, BillingAddress, Payment, Coupon, Refund, Product, ProductImage, ProductReview
 )
 
 class DistrictsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Districts
         fields = ['id', 'title']
-
-class CategorySerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Category
-        fields = ['id', 'name']
-
-class ItemTypeSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ItemType
-        fields = ['id', 'name']
-
-class SizeSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Size
-        fields = ['id', 'name']
-
-class RatingSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Rating
-        fields = ['id', 'value']
-
-class ColorSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Color
-        fields = ['id', 'name', 'code']
-
-class ItemImageSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ItemImage
-        fields = ['id', 'image']
-
-class ItemSizeSerializer(serializers.ModelSerializer):
-    size = SizeSerializer()
-    
-    class Meta:
-        model = ItemSize
-        fields = ['id', 'size', 'price_for_this_size']
-
-class ItemColorSerializer(serializers.ModelSerializer):
-    color = ColorSerializer()
-    
-    class Meta:
-        model = ItemColor
-        fields = ['id', 'color']
-
-class ItemSerializer(serializers.ModelSerializer):
-    images = ItemImageSerializer(many=True)  # Get all related images
-    item_size = ItemSizeSerializer(many=True)  # Get all related sizes with details
-    item_color = ItemColorSerializer(many=True)  # Get all related colors with details
-    category = CategorySerializer()  # Nested serializer for category
-    type = ItemTypeSerializer()  # Nested serializer for item type
-    ratings = RatingSerializer()  # Nested serializer for ratings
-
-    class Meta:
-        model = Item
-        fields = [
-            'id', 'title', 'image', 'ratings', 'price', 'number_of_items',
-            'discount_price', 'product_id', 'brand_name', 'category', 'type',
-            'description', 'is_featured', 'is_bestselling', 'images', 'item_size', 'item_color'
-        ]
 
 class BillingAddressSerializer(serializers.ModelSerializer):
     class Meta:
@@ -117,44 +56,37 @@ class CartSerializer(serializers.ModelSerializer):
     class Meta:
         model = Cart
         fields = '__all__'
-        read_only_fields = ['ordered', 'delivered', 'order_status']
 
 class AddToCartSerializer(serializers.ModelSerializer):
     class Meta:
         model = Cart
-        fields = ['item', 'item_color_code', 'item_size', 'quantity', 'applied_coupon']
+        fields = ['title', 'price', 'quantity', 'total', 'discountPercentage', 'discountedTotal', 'thumbnail']
 
-    def validate(self, attrs):
-        user = self.context['request'].user
-        item = attrs.get('item')
-        quantity = attrs.get('quantity')
+# Product Serializers
+class ProductImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProductImage
+        fields = ['id', 'image_url']
 
-        # Check if the item has enough stock
-        if item.number_of_items < quantity:
-            raise serializers.ValidationError(f"Not enough stock for {item.title}.")
-
-        # Check if the same item already exists in the cart
-        if Cart.objects.filter(
-            user_name=user, 
-            item=item, 
-            item_color_code=attrs.get('item_color_code'),
-            item_size=attrs.get('item_size'), 
-            ordered=False
-        ).exists():
-            raise serializers.ValidationError("This item is already in your cart.")
-        
-        return attrs
-
-    def create(self, validated_data):
-        validated_data['user_name'] = self.context['request'].user
-        return super().create(validated_data)
+class ProductReviewSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProductReview
+        fields = ['id', 'rating', 'comment', 'date', 'reviewer_name', 'reviewer_email']
 
 class ProductSerializer(serializers.ModelSerializer):
+    images = ProductImageSerializer(many=True, read_only=True)
+    reviews = ProductReviewSerializer(many=True, read_only=True)
+    
     class Meta:
-        model = Item
-        fields = ['id', 'title', 'image', 'price', 'number_of_items', 'discount_price', 'product_id', 'brand_name', 'category', 'type', 'description', 'is_featured', 'is_bestselling']
-
-
+        model = Product
+        fields = [
+            'id', 'title', 'description', 'category', 'price', 'discount_percentage', 
+            'rating', 'stock', 'tags', 'brand', 'sku', 'weight', 'width', 'height', 
+            'depth', 'warranty_information', 'shipping_information', 'availability_status',
+            'return_policy', 'minimum_order_quantity', 'created_at', 'updated_at', 
+            'barcode', 'qr_code', 'thumbnail', 'images', 'reviews'
+        ]
+        read_only_fields = ['id', 'created_at', 'updated_at']
 
 class ContactMessageSerializer(serializers.ModelSerializer):
     class Meta:
@@ -199,5 +131,4 @@ class OrderSerializer(serializers.ModelSerializer):
 class HeroSectionSerializer(serializers.ModelSerializer):
     class Meta:
         model = HeroSection
-        fields = ['id', 'title', 'offer', 'button_1_Text', 'button_2_Text', 'image']
-        read_only_fields = ['id'] 
+        fields = ['id', 'title', 'offer', 'button_1_Text', 'button_2_Text', 'image'] 

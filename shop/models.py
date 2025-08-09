@@ -17,83 +17,66 @@ class Districts(models.Model):
     def __str__(self):
         return self.title
 
-class Category(models.Model):
-    name = models.CharField(max_length=100)
+## THIS CHANGE FOR 'dummy' PRODUCTS
+class Product(models.Model):
+    title = models.CharField(max_length=255)
+    description = models.TextField()
+    category = models.CharField(max_length=100)
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    discount_percentage = models.DecimalField(max_digits=5, decimal_places=2)
+    rating = models.DecimalField(max_digits=3, decimal_places=2)
+    stock = models.PositiveIntegerField()
+    tags = models.JSONField(default=list, blank=True)  # List of strings
+    brand = models.CharField(max_length=100)
+    sku = models.CharField(max_length=100, unique=True)
+    weight = models.DecimalField(max_digits=10, decimal_places=2)
+
+    # Dimensions
+    width = models.DecimalField(max_digits=10, decimal_places=2)
+    height = models.DecimalField(max_digits=10, decimal_places=2)
+    depth = models.DecimalField(max_digits=10, decimal_places=2)
+
+    warranty_information = models.CharField(max_length=255, blank=True)
+    shipping_information = models.CharField(max_length=255, blank=True)
+    availability_status = models.CharField(max_length=50)
+
+    # Policies
+    return_policy = models.CharField(max_length=255, blank=True)
+    minimum_order_quantity = models.PositiveIntegerField(default=1)
+
+    # Meta info
+    created_at = models.DateTimeField()
+    updated_at = models.DateTimeField()
+    barcode = models.CharField(max_length=50)
+    qr_code = models.URLField()
+
+    thumbnail = models.URLField()
 
     def __str__(self):
-        return self.name
+        return self.title
 
-class ItemType(models.Model):
-    name = models.CharField(max_length=100)
 
-    def __str__(self):
-        return self.name
-
-class Size(models.Model):
-    name = models.CharField(max_length=100)
+class ProductImage(models.Model):
+    """Multiple images for a product."""
+    product = models.ForeignKey(Product, related_name="images", on_delete=models.CASCADE)
+    image_url = models.URLField()
 
     def __str__(self):
-        return self.name
+        return f"Image for {self.product.title}"
 
-class Rating(models.Model):
-    value = models.IntegerField(unique=True)
 
-    def __str__(self):
-        return f"{self.value} Stars"
-
-class Color(models.Model):
-    name = models.CharField(max_length=100)
-    code = models.CharField(max_length=7)
-
-    def __str__(self):
-        return self.name
-
-class Item(models.Model):
-    title = models.CharField(max_length=200)
-    image = models.ImageField(upload_to='images/')
-    ratings = models.ForeignKey(Rating, on_delete=models.SET_NULL, null=True)
-    price = models.IntegerField()
-    number_of_items = models.IntegerField()
-    discount_price = models.IntegerField()
-    product_id = models.CharField(max_length=20, unique=True)
-    brand_name = models.CharField(max_length=100)
-    category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True)
-    type = models.ForeignKey(ItemType, on_delete=models.SET_NULL, null=True)
-    description = models.TextField(max_length=260)
-    is_featured = models.BooleanField(default=False)
-    is_bestselling = models.BooleanField(default=False)
-    colors = models.ManyToManyField(Color, through='ItemColor')
+class ProductReview(models.Model):
+    """Customer reviews for a product."""
+    product = models.ForeignKey(Product, related_name="reviews", on_delete=models.CASCADE)
+    rating = models.PositiveSmallIntegerField()
+    comment = models.TextField()
+    date = models.DateTimeField()
+    reviewer_name = models.CharField(max_length=100)
+    reviewer_email = models.EmailField()
 
     def __str__(self):
-        return f"{self.title} ({self.product_id})"                 
+        return f"Review by {self.reviewer_name} ({self.rating}★)"
 
-    def get_add_to_url(self):
-        return reverse('add_to_cart', kwargs={'product_id': self.product_id})
-
-    def remove_from_cart_url(self):
-        return reverse('remove_from_cart', kwargs={'product_id': self.product_id})
-
-class ItemImage(models.Model):
-    item = models.ForeignKey(Item, related_name='images', on_delete=models.CASCADE)
-    image = models.ImageField(upload_to='item_images/')
-
-    def __str__(self):
-        return f"Image for {self.item.title}"
-
-class ItemSize(models.Model):
-    item = models.ForeignKey(Item, related_name='item_size', on_delete=models.CASCADE)
-    size = models.ForeignKey(Size, on_delete=models.CASCADE)
-    price_for_this_size = models.IntegerField()
-
-    def __str__(self):
-        return self.size.name
-
-class ItemColor(models.Model):
-    item = models.ForeignKey(Item, related_name='item_color', on_delete=models.CASCADE)
-    color = models.ForeignKey(Color, on_delete=models.CASCADE)
-
-    def __str__(self):
-        return self.color.name
     
 class Slider(models.Model):
     image = models.ImageField(upload_to='images/slider')
@@ -139,22 +122,16 @@ class Refund(models.Model):
     def __str__(self):
         return f"Refund for Order: {self.order}"
 
+
+## this Changes for 'dummy' PRODUCTS API
 class Cart(models.Model):
-    user_name = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    item = models.ForeignKey(Item, on_delete=models.CASCADE)
-    item_color_code = models.CharField(max_length=100)
-    item_size = models.CharField(max_length=10)
-    quantity = models.IntegerField(default=1)
-    ordered = models.BooleanField(default=False)
-    delivered = models.BooleanField(default=False)
-    order_status = models.BooleanField(default=False)
-    applied_coupon = models.ForeignKey(Coupon, on_delete=models.SET_NULL, null=True, blank=True)
-
-    class Meta:
-        unique_together = ('user_name', 'item', 'ordered', 'item_size', 'item_color_code')
-
-    def __str__(self):
-        return f"{self.quantity} of {self.item.product_id} )"
+    title = models.CharField(max_length=255)
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    quantity = models.PositiveIntegerField()
+    total = models.DecimalField(max_digits=10, decimal_places=2)
+    discountPercentage = models.DecimalField(max_digits=5, decimal_places=2)
+    discountedTotal = models.DecimalField(max_digits=10, decimal_places=2)
+    thumbnail = models.URLField()
 
 class ContactMessage(models.Model):
     email = models.EmailField()

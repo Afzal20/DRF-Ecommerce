@@ -8,27 +8,18 @@ from rest_framework.authentication import TokenAuthentication
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.generics import ListAPIView, DestroyAPIView
-from .models import Cart, ContactMessage, HeroSection
-from .serializers import CartSerializer, AddToCartSerializer, ContactMessageSerializer, HeroSectionSerializer
-from rest_framework import generics
-from .serializers import ProductSerializer
-from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from .models import (
-    Districts, Category, ItemType, Size, Rating, Color,
-    Item, ItemImage, ItemSize, ItemColor, Cart, Order,
-    Slider, BillingAddress, Payment, Coupon, Refund
+    Cart, ContactMessage, HeroSection, Districts, Order, OrderItem,
+    Slider, BillingAddress, Payment, Coupon, Refund, Product, ProductImage, ProductReview
 )
 from .serializers import (
-    AddToCartSerializer, DistrictsSerializer, CategorySerializer, ItemTypeSerializer,
-    SizeSerializer, RatingSerializer, ColorSerializer, ItemSerializer,
-    ItemImageSerializer, ItemSizeSerializer, ItemColorSerializer, CartSerializer,
-    OrderSerializer, SliderSerializer, BillingAddressSerializer,
-    PaymentSerializer, CouponSerializer, RefundSerializer
+    CartSerializer, AddToCartSerializer, ContactMessageSerializer, HeroSectionSerializer,
+    DistrictsSerializer, OrderSerializer, OrderItemSerializer, SliderSerializer, 
+    BillingAddressSerializer, PaymentSerializer, CouponSerializer, RefundSerializer,
+    ProductSerializer, ProductImageSerializer, ProductReviewSerializer
 )
-
-from rest_framework import generics, viewsets
-from .models import Order, OrderItem
-from .serializers import OrderSerializer, OrderItemSerializer
+from rest_framework import generics
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from django.contrib.auth import get_user_model
 
 from django.http import HttpResponse, Http404
@@ -42,55 +33,33 @@ class DistrictsViewSet(viewsets.ModelViewSet):
     queryset = Districts.objects.all()
     serializer_class = DistrictsSerializer
 
-class CategoryViewSet(viewsets.ModelViewSet):
-    queryset = Category.objects.all()
-    serializer_class = CategorySerializer
+class ProductViewSet(viewsets.ModelViewSet):
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
-class ItemTypeViewSet(viewsets.ModelViewSet):
-    queryset = ItemType.objects.all()
-    serializer_class = ItemTypeSerializer
+class ProductImageViewSet(viewsets.ModelViewSet):
+    queryset = ProductImage.objects.all()
+    serializer_class = ProductImageSerializer
 
-class SizeViewSet(viewsets.ModelViewSet):
-    queryset = Size.objects.all()
-    serializer_class = SizeSerializer
-
-class RatingViewSet(viewsets.ModelViewSet):
-    queryset = Rating.objects.all()
-    serializer_class = RatingSerializer
-
-class ColorViewSet(viewsets.ModelViewSet):
-    queryset = Color.objects.all()
-    serializer_class = ColorSerializer
-
-
-class ItemViewSet(viewsets.ModelViewSet):
-    queryset = Item.objects.all()
-    serializer_class = ItemSerializer
-    lookup_field = 'product_id'  # Use product_id instead of the default 'id'
-    
-    lookup_value_regex = '[\w-]+'
-
-class ItemImageViewSet(viewsets.ModelViewSet):
-    queryset = ItemImage.objects.all()
-    serializer_class = ItemImageSerializer
-
-class ItemSizeViewSet(viewsets.ModelViewSet):
-    queryset = ItemSize.objects.all()
-    serializer_class = ItemSizeSerializer
-
-class ItemColorViewSet(viewsets.ModelViewSet):
-    queryset = ItemColor.objects.all()
-    serializer_class = ItemColorSerializer 
+class ProductReviewViewSet(viewsets.ModelViewSet):
+    queryset = ProductReview.objects.all()
+    serializer_class = ProductReviewSerializer
 
 class OrderViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
     serializer_class = OrderSerializer
-    queryset = Order.objects.all()  # <-- Add this line
+    queryset = Order.objects.all()
 
     def get_queryset(self):
         if self.request.user.is_authenticated:
             return Order.objects.filter(user=self.request.user)
         return Order.objects.none()
+
+class OrderItemViewSet(viewsets.ModelViewSet):
+    permission_classes = [IsAuthenticated]
+    queryset = OrderItem.objects.all()
+    serializer_class = OrderItemSerializer
 
 class SliderViewSet(viewsets.ModelViewSet):
     queryset = Slider.objects.all()
@@ -112,66 +81,29 @@ class RefundViewSet(viewsets.ModelViewSet):
     queryset = Refund.objects.all()
     serializer_class = RefundSerializer
 
-@api_view(['GET'])
-def get_item_by_product_id(request, product_id):
-    try:
-        # Fetch the item by product_id
-        item = Item.objects.prefetch_related('images', 'item_size__size', 'item_color__color').filter(product_id=product_id).first()
-
-        if item:
-            # Serialize the item using the ItemSerializer
-            serializer = ItemSerializer(item)
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        else:
-            return Response({"error": "Item not found"}, status=status.HTTP_404_NOT_FOUND)
-
-    except Exception as e:
-        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+class CartViewSet(viewsets.ModelViewSet):
+    queryset = Cart.objects.all()
+    serializer_class = CartSerializer
 
 class AddToCartView(APIView):
-    permission_classes = [IsAuthenticated]
-
     def post(self, request, *args, **kwargs):
-        serializer = AddToCartSerializer(data=request.data, context={'request': request})
+        serializer = AddToCartSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class CartListView(ListAPIView):
-    permission_classes = [IsAuthenticated]
     serializer_class = CartSerializer
-
-    def get_queryset(self):
-        if self.request.user.is_authenticated:
-            return Cart.objects.filter(user_name=self.request.user, ordered=False)
-        return Cart.objects.none()
+    queryset = Cart.objects.all()
 
 class RemoveFromCartView(DestroyAPIView):
-    permission_classes = [IsAuthenticated]
-
-    def get_queryset(self):
-        if self.request.user.is_authenticated:
-            return Cart.objects.filter(user_name=self.request.user, ordered=False)
-        return Cart.objects.none()
-
-class ProductDetailView(generics.RetrieveAPIView):
-    queryset = Item.objects.all()
-    serializer_class = ProductSerializer
-    lookup_field = 'id' 
+    queryset = Cart.objects.all()
     
-    def get(self, request, *args, **kwargs):
-        product = self.get_object()
-        serializer = self.get_serializer(product)
-        return Response(serializer.data)
-
-
 class UpdateCartQuantityView(APIView):
-    permission_classes = [IsAuthenticated]
-
     def patch(self, request, pk, *args, **kwargs):
         try:
-            cart_item = Cart.objects.get(pk=pk, user_name=request.user, ordered=False)
+            cart_item = Cart.objects.get(pk=pk)
         except Cart.DoesNotExist:
             return Response({"error": "Item not found in cart"}, status=status.HTTP_404_NOT_FOUND)
 
@@ -194,14 +126,6 @@ class ContactMessageCreateView(generics.CreateAPIView):
             return Response({"message": "Message sent successfully!"}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-class OrderItemViewSet(viewsets.ModelViewSet):
-    permission_classes = [IsAuthenticated]
-    serializer_class = CartSerializer
-    
-    queryset = OrderItem.objects.all()
-    serializer_class = OrderItemSerializer
-    permission_classes = [IsAuthenticated]
-
 class UserOrderList(viewsets.ReadOnlyModelViewSet):
     serializer_class = OrderSerializer
     permission_classes = [IsAuthenticated]
@@ -210,6 +134,25 @@ class UserOrderList(viewsets.ReadOnlyModelViewSet):
         if self.request.user.is_authenticated:
             return Order.objects.filter(user=self.request.user)
         return Order.objects.none()
+
+class HeroSectionViewSet(viewsets.ModelViewSet):
+    queryset = HeroSection.objects.all()
+    serializer_class = HeroSectionSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
+@api_view(['GET'])
+def get_product_by_id(request, product_id):
+    try:
+        product = Product.objects.get(id=product_id)
+        serializer = ProductSerializer(product)
+        return Response(serializer.data)
+    except Product.DoesNotExist:
+        return Response({"error": "Product not found"}, status=status.HTTP_404_NOT_FOUND)
+
+class ProductDetailView(generics.RetrieveAPIView):
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
+    lookup_field = 'id'
     
 
 def serve_media(request, path):
@@ -223,15 +166,6 @@ def serve_media(request, path):
             return response
     else:
         raise Http404("Media file not found")
-
-
-class HeroSectionViewSet(viewsets.ModelViewSet):
-    queryset = HeroSection.objects.all()
-    serializer_class = HeroSectionSerializer
-    permission_classes = [IsAuthenticatedOrReadOnly]
-
-    def get_queryset(self):
-        return HeroSection.objects.all()
 
 def index(request):
     return render(request, 'index.html')
