@@ -148,3 +148,4 @@ class Command(BaseCommand):
                 
         except Exception as e:
             raise CommandError(f"Error during download process: {e}")
+
