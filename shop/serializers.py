@@ -66,7 +66,7 @@ class AddToCartSerializer(serializers.ModelSerializer):
 class ProductImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProductImage
-        fields = ['id', 'image_url']
+        fields = ['id', 'image', 'image_order']
 
 class ProductReviewSerializer(serializers.ModelSerializer):
     class Meta:

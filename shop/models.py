@@ -48,9 +48,9 @@ class Product(models.Model):
     created_at = models.DateTimeField()
     updated_at = models.DateTimeField()
     barcode = models.CharField(max_length=50)
-    qr_code = models.URLField()
+    qr_code = models.ImageField(upload_to='products/qr_codes/', blank=True, null=True)
 
-    thumbnail = models.URLField()
+    thumbnail = models.ImageField(upload_to='products/thumbnails/', blank=True, null=True)
 
     def __str__(self):
         return self.title
@@ -59,10 +59,14 @@ class Product(models.Model):
 class ProductImage(models.Model):
     """Multiple images for a product."""
     product = models.ForeignKey(Product, related_name="images", on_delete=models.CASCADE)
-    image_url = models.URLField()
+    image = models.ImageField(upload_to='products/product_images/', blank=True, null=True)
+    image_order = models.PositiveSmallIntegerField(default=0)  # For ordering images
+
+    class Meta:
+        ordering = ['image_order']
 
     def __str__(self):
-        return f"Image for {self.product.title}"
+        return f"Image {self.image_order + 1} for {self.product.title}"
 
 
 class ProductReview(models.Model):
@@ -131,7 +135,7 @@ class Cart(models.Model):
     total = models.DecimalField(max_digits=10, decimal_places=2)
     discountPercentage = models.DecimalField(max_digits=5, decimal_places=2)
     discountedTotal = models.DecimalField(max_digits=10, decimal_places=2)
-    thumbnail = models.URLField()
+    thumbnail = models.ImageField(upload_to='imagess/cart/thumbnails/', blank=True, null=True)
 
 class ContactMessage(models.Model):
     email = models.EmailField()

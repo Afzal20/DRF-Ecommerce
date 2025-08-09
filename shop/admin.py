@@ -55,7 +55,8 @@ class SliderAdmin(admin.ModelAdmin):
 class ProductImageInline(admin.TabularInline):
     model = ProductImage
     extra = 1
-    fields = ('image_url',)
+    fields = ('image', 'image_order')
+    readonly_fields = ('image_order',)
 
 class ProductReviewInline(admin.TabularInline):
     model = ProductReview
@@ -94,8 +95,10 @@ class ProductAdmin(admin.ModelAdmin):
     )
 
 class ProductImageAdmin(admin.ModelAdmin):
-    list_display = ('product', 'image_url')
+    list_display = ('product', 'image', 'image_order')
+    list_editable = ('image_order',)
     search_fields = ('product__title',)
+    list_filter = ('product__category',)
 
 class ProductReviewAdmin(admin.ModelAdmin):
     list_display = ('product', 'reviewer_name', 'rating', 'date')
