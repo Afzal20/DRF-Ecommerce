@@ -8,6 +8,7 @@ from rest_framework.authentication import TokenAuthentication
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.generics import ListAPIView, DestroyAPIView
+
 from .models import (
     Cart, ContactMessage, HeroSection, Districts, Order, OrderItem,
     Slider, BillingAddress, Payment, Coupon, Refund, Product, ProductImage, ProductReview
@@ -22,6 +23,9 @@ from rest_framework import generics
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from django.contrib.auth import get_user_model
 
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
+
 from django.http import HttpResponse, Http404
 import os
 import mimetypes
@@ -33,10 +37,16 @@ class DistrictsViewSet(viewsets.ModelViewSet):
     queryset = Districts.objects.all()
     serializer_class = DistrictsSerializer
 
+
+#Cache the list view response for 2 hours to improve performance.
 class ProductViewSet(viewsets.ModelViewSet):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
+
+    @method_decorator(cache_page(60 * 60 * 2))
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
 
 class ProductImageViewSet(viewsets.ModelViewSet):
     queryset = ProductImage.objects.all()
