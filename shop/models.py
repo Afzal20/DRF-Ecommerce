@@ -196,3 +196,36 @@ class HeroSection(models.Model):
     button_1_Text = models.CharField(max_length=20)
     button_2_Text = models.CharField(max_length=20)
     image = models.ImageField(upload_to='HeroSection/')
+
+
+
+class TopSellingProducts(models.Model):
+    product = models.ForeignKey('Product', on_delete=models.CASCADE)
+
+    class Meta:
+        verbose_name = "Top Selling Product"
+        verbose_name_plural = "Top Selling Products"
+        unique_together = ['product']  # Ensure a product can only be added once
+
+    def __str__(self):
+        return f"Top Selling Product: {self.product.title}"
+    
+    @property
+    def discounted_price(self):
+        """Calculate the discounted price of the product"""
+        if self.product.discount_percentage > 0:
+            discount_amount = (self.product.price * self.product.discount_percentage) / 100
+            return self.product.price - discount_amount
+        return self.product.price
+    
+    @property
+    def is_available(self):
+        """Check if the product is available"""
+        return self.product.stock > 0 and self.product.availability_status.lower() == 'in stock'
+    
+    @property
+    def savings_amount(self):
+        """Calculate the savings amount due to discount"""
+        if self.product.discount_percentage > 0:
+            return (self.product.price * self.product.discount_percentage) / 100
+        return 0

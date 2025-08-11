@@ -2,7 +2,7 @@ from django.core.validators import RegexValidator
 from rest_framework import serializers
 from .models import (
     ContactMessage, Districts, HeroSection, OrderItem, Cart, Order,
-    Slider, BillingAddress, Payment, Coupon, Refund, Product, ProductImage, ProductReview
+    Slider, BillingAddress, Payment, Coupon, Refund, Product, ProductImage, ProductReview, TopSellingProducts, 
 )
 
 class DistrictsSerializer(serializers.ModelSerializer):
@@ -132,3 +132,47 @@ class HeroSectionSerializer(serializers.ModelSerializer):
     class Meta:
         model = HeroSection
         fields = ['id', 'title', 'offer', 'button_1_Text', 'button_2_Text', 'image'] 
+
+
+
+class TopSellingProductsSerializer(serializers.ModelSerializer):
+    product_details = ProductSerializer(source='product', read_only=True)
+    product_title = serializers.CharField(source='product.title', read_only=True)
+    product_price = serializers.DecimalField(source='product.price', max_digits=10, decimal_places=2, read_only=True)
+    product_category = serializers.CharField(source='product.category', read_only=True)
+    product_brand = serializers.CharField(source='product.brand', read_only=True)
+    product_rating = serializers.DecimalField(source='product.rating', max_digits=3, decimal_places=2, read_only=True)
+    product_stock = serializers.IntegerField(source='product.stock', read_only=True)
+    product_thumbnail = serializers.ImageField(source='product.thumbnail', read_only=True)
+    discounted_price = serializers.ReadOnlyField()
+    is_available = serializers.ReadOnlyField()
+    savings_amount = serializers.ReadOnlyField()
+    
+    class Meta:
+        model = TopSellingProducts
+        fields = [
+            'id', 'product', 'product_title', 'product_price', 'product_category', 
+            'product_brand', 'product_rating', 'product_stock', 'product_thumbnail',
+            'discounted_price', 'is_available', 'savings_amount', 'product_details'
+        ]
+
+class TopSellingProductsSimpleSerializer(serializers.ModelSerializer):
+    """Simplified serializer without full product details for better performance"""
+    product_title = serializers.CharField(source='product.title', read_only=True)
+    product_price = serializers.DecimalField(source='product.price', max_digits=10, decimal_places=2, read_only=True)
+    product_category = serializers.CharField(source='product.category', read_only=True)
+    product_brand = serializers.CharField(source='product.brand', read_only=True)
+    product_rating = serializers.DecimalField(source='product.rating', max_digits=3, decimal_places=2, read_only=True)
+    product_stock = serializers.IntegerField(source='product.stock', read_only=True)
+    product_thumbnail = serializers.ImageField(source='product.thumbnail', read_only=True)
+    discounted_price = serializers.ReadOnlyField()
+    is_available = serializers.ReadOnlyField()
+    savings_amount = serializers.ReadOnlyField()
+    
+    class Meta:
+        model = TopSellingProducts
+        fields = [
+            'id', 'product', 'product_title', 'product_price', 'product_category', 
+            'product_brand', 'product_rating', 'product_stock', 'product_thumbnail',
+            'discounted_price', 'is_available', 'savings_amount'
+        ]

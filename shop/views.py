@@ -11,13 +11,13 @@ from rest_framework.generics import ListAPIView, DestroyAPIView
 
 from .models import (
     Cart, ContactMessage, HeroSection, Districts, Order, OrderItem,
-    Slider, BillingAddress, Payment, Coupon, Refund, Product, ProductImage, ProductReview
+    Slider, BillingAddress, Payment, Coupon, Refund, Product, ProductImage, ProductReview, TopSellingProducts
 )
 from .serializers import (
     CartSerializer, AddToCartSerializer, ContactMessageSerializer, HeroSectionSerializer,
     DistrictsSerializer, OrderSerializer, OrderItemSerializer, SliderSerializer, 
     BillingAddressSerializer, PaymentSerializer, CouponSerializer, RefundSerializer,
-    ProductSerializer, ProductImageSerializer, ProductReviewSerializer
+    ProductSerializer, ProductImageSerializer, ProductReviewSerializer, TopSellingProductsSerializer
 )
 from rest_framework import generics
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
@@ -179,3 +179,25 @@ def serve_media(request, path):
 
 def index(request):
     return render(request, 'index.html')
+
+
+class TopSellingProductsViewSet(viewsets.ModelViewSet):
+    queryset = TopSellingProducts.objects.select_related('product').all()
+    serializer_class = TopSellingProductsSerializer
+    
+    def get_queryset(self):
+        """Optimize queries by selecting related product data"""
+        return TopSellingProducts.objects.select_related(
+            'product'
+        ).prefetch_related(
+            'product__images', 
+            'product__reviews'
+        )
+    
+    def get_serializer_class(self):
+        """Use different serializers based on action"""
+        if self.action == 'list':
+            # Use simple serializer for list view to improve performance
+            from .serializers import TopSellingProductsSimpleSerializer
+            return TopSellingProductsSimpleSerializer
+        return TopSellingProductsSerializer

@@ -4,7 +4,7 @@ from rest_framework.routers import DefaultRouter
 from .views import (
     AddToCartView, CartListView, ContactMessageCreateView, DistrictsViewSet, HeroSectionViewSet, 
     ProductDetailView, RemoveFromCartView, OrderViewSet, OrderItemViewSet, CartViewSet,
-    SliderViewSet, BillingAddressViewSet, PaymentViewSet, CouponViewSet, RefundViewSet, 
+    SliderViewSet, BillingAddressViewSet, PaymentViewSet, CouponViewSet, RefundViewSet, TopSellingProductsViewSet, 
     UpdateCartQuantityView, get_product_by_id, UserOrderList, ProductViewSet, ProductImageViewSet, ProductReviewViewSet
 )
 
@@ -28,6 +28,7 @@ urlpatterns = [
     path('', include(router.urls)),
     
     path('products/<int:product_id>/', get_product_by_id, name='product-by-id'),
+    path('top-selling-products/', TopSellingProductsViewSet.as_view({'get': 'list'}), name='top-selling-products'),
 
     path('cart/', CartListView.as_view(), name='cart-list'),
     path('cart/add/', AddToCartView.as_view(), name='add-to-cart'),
