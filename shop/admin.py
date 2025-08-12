@@ -18,6 +18,7 @@ from .models import (
     ProductReview, 
     HeroSection, 
     TopSellingProducts,
+    TopCategory,
     Category,  # Added Category import
 )
 
@@ -381,6 +382,132 @@ class TopSellingProductsAdmin(admin.ModelAdmin):
         )
     get_availability_status.short_description = 'Availability'
 
+
+class TopCategoryAdmin(admin.ModelAdmin):
+    list_display = (
+        'category', 'get_category_product_count', 'get_category_description', 'get_category_sort_order', 
+        'get_is_active', 'get_category_meta_title'
+    )
+    search_fields = ('category__name', 'category__description', 'category__meta_title')
+    list_filter = ('category__is_active', 'category__sort_order')
+    autocomplete_fields = ['category']
+    readonly_fields = ('category_preview',)
+    
+    fieldsets = (
+        (None, {
+            'fields': ('category',)
+        }),
+        ('Category Details Preview', {
+            'fields': ('category_preview',),
+            'classes': ('collapse',),
+        }),
+    )
+    
+    def get_category_product_count(self, obj):
+        return obj.category_product_count
+    get_category_product_count.short_description = 'Product Count'
+    
+    def get_category_description(self, obj):
+        description = obj.category.description
+        if description:
+            return description[:50] + ('...' if len(description) > 50 else '')
+        return '-'
+    get_category_description.short_description = 'Description'
+    
+    def get_category_sort_order(self, obj):
+        return obj.category.sort_order
+    get_category_sort_order.short_description = 'Sort Order'
+    get_category_sort_order.admin_order_field = 'category__sort_order'
+    
+    def get_is_active(self, obj):
+        if obj.is_active:
+            return format_html(
+                '<span style="color: #27ae60; font-weight: bold;">✓ Active</span>'
+            )
+        return format_html(
+            '<span style="color: #e74c3c; font-weight: bold;">✗ Inactive</span>'
+        )
+    get_is_active.short_description = 'Status'
+    
+    def get_category_meta_title(self, obj):
+        meta_title = obj.category.meta_title
+        if meta_title:
+            return meta_title[:30] + ('...' if len(meta_title) > 30 else '')
+        return '-'
+    get_category_meta_title.short_description = 'Meta Title'
+    
+    def category_preview(self, obj):
+        """Display category preview in admin form"""
+        if not obj or not obj.category:
+            return format_html('<div style="padding: 20px; text-align: center; color: #6c757d; font-style: italic;">💡 Category preview will appear here after selecting a category</div>')
+        
+        category = obj.category
+        
+        # Status styling
+        status_style = 'background: #d4edda; color: #155724;' if category.is_active else 'background: #f8d7da; color: #721c24;'
+        status_text = '✅ Active' if category.is_active else '❌ Inactive'
+        
+        # Build image display
+        image_html = ''
+        if category.image:
+            image_html = f'<img src="{category.image.url}" alt="{category.name}" style="max-width: 150px; max-height: 150px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">'
+        
+        # Build description
+        description_html = ''
+        if category.description:
+            description = category.description[:200] + ('...' if len(category.description) > 200 else '')
+            description_html = f'''
+                <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #ddd;">
+                    <strong>📝 Description:</strong>
+                    <p style="margin-top: 8px; color: #555; line-height: 1.4;">{description}</p>
+                </div>
+            '''
+        
+        return format_html(f'''
+            <div style="background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                <h3 style="color: #2c3e50; margin-bottom: 15px; font-size: 18px; border-bottom: 2px solid #3498db; padding-bottom: 8px;">📂 Category Details</h3>
+                
+                <div style="display: flex; gap: 20px; align-items: flex-start;">
+                    <div style="flex: 1;">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                            <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee;">
+                                <span style="font-weight: 600; color: #555;">📂 Category:</span>
+                                <span style="color: #333; font-weight: 500;">{category.name}</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee;">
+                                <span style="font-weight: 600; color: #555;">🔗 Slug:</span>
+                                <span style="color: #333; font-weight: 500;">{category.slug}</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee;">
+                                <span style="font-weight: 600; color: #555;">📊 Products:</span>
+                                <span style="color: #333; font-weight: 500;">{category.product_count}</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee;">
+                                <span style="font-weight: 600; color: #555;">🔄 Status:</span>
+                                <span style="color: #333; font-weight: 500;"><span style="{status_style} padding: 4px 8px; border-radius: 4px; font-weight: bold;">{status_text}</span></span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee;">
+                                <span style="font-weight: 600; color: #555;">🔢 Sort Order:</span>
+                                <span style="color: #333; font-weight: 500;">{category.sort_order}</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee;">
+                                <span style="font-weight: 600; color: #555;">🏷️ Meta Title:</span>
+                                <span style="color: #333; font-weight: 500;">{category.meta_title or 'Not set'}</span>
+                            </div>
+                        </div>
+                        
+                        {description_html}
+                    </div>
+                    
+                    <div style="flex-shrink: 0;">
+                        {image_html}
+                    </div>
+                </div>
+            </div>
+        ''')
+    category_preview.short_description = "Category Preview"
+
+
 # Registering Models
 admin.site.register(Districts, DistrictsAdmin)
 admin.site.register(Category, CategoryAdmin)
@@ -396,6 +523,7 @@ admin.site.register(OrderItem, OrderItemAdmin)
 
 # New Product Models
 admin.site.register(TopSellingProducts, TopSellingProductsAdmin)
+admin.site.register(TopCategory, TopCategoryAdmin)
 admin.site.register(Product, ProductAdmin)
 admin.site.register(ProductImage, ProductImageAdmin)
 admin.site.register(ProductReview, ProductReviewAdmin)

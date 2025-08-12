@@ -15,6 +15,7 @@ import hashlib
 from .models import (
     Cart, ContactMessage, HeroSection, Districts, Order, OrderItem,
     Slider, BillingAddress, Payment, Coupon, Refund, Product, ProductImage, ProductReview, TopSellingProducts,
+    TopCategory,
     Category,  # Added Category import
 )
 from .serializers import (
@@ -22,6 +23,7 @@ from .serializers import (
     DistrictsSerializer, OrderSerializer, OrderItemSerializer, SliderSerializer, 
     BillingAddressSerializer, PaymentSerializer, CouponSerializer, RefundSerializer,
     ProductSerializer, ProductImageSerializer, ProductReviewSerializer, TopSellingProductsSerializer,
+    TopSellingProductsSimpleSerializer, TopCategorySerializer, TopCategorySimpleSerializer,
     CategorySerializer, CategoryListSerializer,  # Added Category serializers
 )
 from rest_framework import generics
@@ -224,6 +226,25 @@ class TopSellingProductsViewSet(viewsets.ModelViewSet):
             return TopSellingProductsSerializer
         return TopSellingProductsSerializer
 
+
+class TopCategoryViewSet(viewsets.ModelViewSet):
+    queryset = TopCategory.objects.select_related('category').all()
+    serializer_class = TopCategorySerializer
+
+    @method_decorator(cache_page(60 * 60 * 2, key_prefix='top_categories'))
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
+    
+    def get_queryset(self):
+        """Optimize queries by selecting related category data"""
+        return TopCategory.objects.select_related('category').filter(category__is_active=True)
+    
+    def get_serializer_class(self):
+        """Use different serializers based on action"""
+        if self.action == 'list':
+            # Use the regular serializer for now - can be optimized later
+            return TopCategorySerializer
+        return TopCategorySerializer
 
 
 # Category ViewSets

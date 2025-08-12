@@ -3,7 +3,7 @@ from rest_framework import serializers
 from .models import (
     ContactMessage, Districts, HeroSection, OrderItem, Cart, Order,
     Slider, BillingAddress, Payment, Coupon, Refund, Product, ProductImage, ProductReview, TopSellingProducts, 
-    Category,  # Added Category import
+    Category, TopCategory,  # Added TopCategory import
 )
 
 class DistrictsSerializer(serializers.ModelSerializer):
@@ -195,4 +195,41 @@ class TopSellingProductsSimpleSerializer(serializers.ModelSerializer):
             'id', 'product', 'product_title', 'product_price', 'product_category', 
             'product_brand', 'product_rating', 'product_stock', 'product_thumbnail',
             'discounted_price', 'is_available', 'savings_amount'
+        ]
+
+
+class TopCategorySerializer(serializers.ModelSerializer):
+    category_details = CategorySerializer(source='category', read_only=True)
+    category_name = serializers.CharField(source='category.name', read_only=True)
+    category_slug = serializers.CharField(source='category.slug', read_only=True)
+    category_description = serializers.CharField(source='category.description', read_only=True)
+    category_image = serializers.ImageField(source='category.image', read_only=True)
+    category_sort_order = serializers.IntegerField(source='category.sort_order', read_only=True)
+    category_meta_title = serializers.CharField(source='category.meta_title', read_only=True)
+    category_meta_description = serializers.CharField(source='category.meta_description', read_only=True)
+    category_product_count = serializers.ReadOnlyField()
+    is_active = serializers.ReadOnlyField()
+    
+    class Meta:
+        model = TopCategory
+        fields = [
+            'id', 'category', 'category_name', 'category_slug', 'category_description', 
+            'category_image', 'category_sort_order', 'category_meta_title', 
+            'category_meta_description', 'category_product_count', 'is_active', 'category_details'
+        ]
+
+class TopCategorySimpleSerializer(serializers.ModelSerializer):
+    """Simplified serializer without full category details for better performance"""
+    category_name = serializers.CharField(source='category.name', read_only=True)
+    category_slug = serializers.CharField(source='category.slug', read_only=True)
+    category_description = serializers.CharField(source='category.description', read_only=True)
+    category_image = serializers.ImageField(source='category.image', read_only=True)
+    category_product_count = serializers.ReadOnlyField()
+    is_active = serializers.ReadOnlyField()
+    
+    class Meta:
+        model = TopCategory
+        fields = [
+            'id', 'category', 'category_name', 'category_slug', 'category_description', 
+            'category_image', 'category_product_count', 'is_active'
         ]

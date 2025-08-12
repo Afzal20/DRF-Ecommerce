@@ -260,3 +260,34 @@ class TopSellingProducts(models.Model):
         if self.product.discount_percentage > 0:
             return (self.product.price * self.product.discount_percentage) / 100
         return 0
+
+class TopCategory(models.Model):
+    category = models.ForeignKey('Category', on_delete=models.CASCADE)
+
+    class Meta:
+        verbose_name = "Top Category"
+        verbose_name_plural = "Top Categories"
+        unique_together = ['category']  # Ensure a category can only be added once
+
+    def __str__(self):
+        return f"Top Category: {self.category.name}"
+    
+    @property
+    def category_product_count(self):
+        """Get the total number of products in this category"""
+        return self.category.product_count
+    
+    @property
+    def is_active(self):
+        """Check if the category is active"""
+        return self.category.is_active
+    
+    @property
+    def category_image(self):
+        """Get the category image"""
+        return self.category.image
+    
+    @property
+    def category_description(self):
+        """Get the category description"""
+        return self.category.description

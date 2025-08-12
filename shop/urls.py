@@ -5,7 +5,7 @@ from .views import (
     AddToCartView, CartListView, ContactMessageCreateView, DistrictsViewSet, HeroSectionViewSet, 
     ProductDetailView, RemoveFromCartView, OrderViewSet, OrderItemViewSet, CartViewSet,
     SliderViewSet, BillingAddressViewSet, PaymentViewSet, CouponViewSet, RefundViewSet, TopSellingProductsViewSet, 
-    UpdateCartQuantityView, get_product_by_id, UserOrderList, ProductViewSet, ProductImageViewSet, ProductReviewViewSet,
+    TopCategoryViewSet, UpdateCartQuantityView, get_product_by_id, UserOrderList, ProductViewSet, ProductImageViewSet, ProductReviewViewSet,
     CategoryViewSet, featured_categories, category_products,  # Added Category views
 )
 
@@ -31,6 +31,7 @@ urlpatterns = [
     
     path('products/<int:product_id>/', get_product_by_id, name='product-by-id'),
     path('top-selling-products/', TopSellingProductsViewSet.as_view({'get': 'list'}), name='top-selling-products'),
+    path('top-categories/', TopCategoryViewSet.as_view({'get': 'list'}), name='top-categories'),
 
     # Category-specific endpoints
     path('categories/featured/', featured_categories, name='featured-categories'),
