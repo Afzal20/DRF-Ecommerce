@@ -9,15 +9,20 @@ from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.generics import ListAPIView, DestroyAPIView
 
+import hashlib
+
+
 from .models import (
     Cart, ContactMessage, HeroSection, Districts, Order, OrderItem,
-    Slider, BillingAddress, Payment, Coupon, Refund, Product, ProductImage, ProductReview, TopSellingProducts
+    Slider, BillingAddress, Payment, Coupon, Refund, Product, ProductImage, ProductReview, TopSellingProducts,
+    Category,  # Added Category import
 )
 from .serializers import (
     CartSerializer, AddToCartSerializer, ContactMessageSerializer, HeroSectionSerializer,
     DistrictsSerializer, OrderSerializer, OrderItemSerializer, SliderSerializer, 
     BillingAddressSerializer, PaymentSerializer, CouponSerializer, RefundSerializer,
-    ProductSerializer, ProductImageSerializer, ProductReviewSerializer, TopSellingProductsSerializer
+    ProductSerializer, ProductImageSerializer, ProductReviewSerializer, TopSellingProductsSerializer,
+    CategorySerializer, CategoryListSerializer,  # Added Category serializers
 )
 from rest_framework import generics
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
@@ -26,7 +31,8 @@ from django.contrib.auth import get_user_model
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 
-from django.http import HttpResponse, Http404
+from django.http import HttpResponse, Http404, HttpResponseNotModified
+
 import os
 import mimetypes
 from django.conf import settings
@@ -44,7 +50,7 @@ class ProductViewSet(viewsets.ModelViewSet):
     serializer_class = ProductSerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
 
-    @method_decorator(cache_page(60 * 60 * 2))
+    @method_decorator(cache_page(60 * 60 * 2, key_prefix='product_list'))
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
 
@@ -173,6 +179,19 @@ def serve_media(request, path):
             mime_type, _ = mimetypes.guess_type(media_path)
             response = HttpResponse(f.read(), content_type=mime_type or 'application/octet-stream')
             response["Content-Disposition"] = f'inline; filename="{os.path.basename(media_path)}"'
+            
+            # Add cache headers for images (cache for 7 days)
+            response['Cache-Control'] = 'public, max-age=604800'  # 7 days 60*60*24*7
+            
+            # Add ETag for better caching
+            etag = hashlib.md5(f.read()).hexdigest()
+            f.seek(0)  # Reset file pointer
+            response['ETag'] = f'"{etag}"'
+            
+            # Check if client has cached version
+            if request.META.get('HTTP_IF_NONE_MATCH') == f'"{etag}"':
+                return HttpResponseNotModified()
+                
             return response
     else:
         raise Http404("Media file not found")
@@ -184,6 +203,10 @@ def index(request):
 class TopSellingProductsViewSet(viewsets.ModelViewSet):
     queryset = TopSellingProducts.objects.select_related('product').all()
     serializer_class = TopSellingProductsSerializer
+
+    @method_decorator(cache_page(60 * 60 * 2, key_prefix='top_selling_products'))
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
     
     def get_queryset(self):
         """Optimize queries by selecting related product data"""
@@ -197,7 +220,112 @@ class TopSellingProductsViewSet(viewsets.ModelViewSet):
     def get_serializer_class(self):
         """Use different serializers based on action"""
         if self.action == 'list':
-            # Use simple serializer for list view to improve performance
-            from .serializers import TopSellingProductsSimpleSerializer
-            return TopSellingProductsSimpleSerializer
+            # Use the regular serializer for now - can be optimized later
+            return TopSellingProductsSerializer
         return TopSellingProductsSerializer
+
+
+
+# Category ViewSets
+class CategoryViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet for managing categories.
+    Provides full CRUD operations for categories.
+    """
+    queryset = Category.objects.filter(is_active=True)
+    serializer_class = CategorySerializer
+    permission_classes = [IsAuthenticatedOrReadOnly]
+    lookup_field = 'slug'  # Allow lookup by slug for SEO-friendly URLs
+
+    def get_serializer_class(self):
+        """Use simplified serializer for list view"""
+        if self.action == 'list':
+            return CategoryListSerializer
+        return CategorySerializer
+
+    @method_decorator(cache_page(60 * 60 * 1, key_prefix='category_list'))
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
+
+    def get_queryset(self):
+        """Filter categories and optionally return only featured ones"""
+        queryset = Category.objects.filter(is_active=True)
+        
+        # Featured functionality is not available in the current Category model
+        # If you need featured categories, add is_featured field to Category model
+        
+        return queryset.order_by('sort_order', 'name')
+
+
+@api_view(['GET'])
+@cache_page(60 * 60 * 2, key_prefix='featured_categories')  # Cache for 2 hours
+def featured_categories(request):
+    """
+    API endpoint to get featured categories for the homepage.
+    """
+    categories = Category.objects.filter(is_active=True).order_by('sort_order', 'name')
+    serializer = CategoryListSerializer(categories, many=True, context={'request': request})
+    return Response(serializer.data)
+
+
+@api_view(['GET'])
+@cache_page(60 * 60 * 1, key_prefix='category_products')  # Cache for 1 hour
+def category_products(request, slug):
+    """
+    API endpoint to get products by category slug.
+    Optimized with caching and efficient queries.
+    """
+    try:
+        # Optimize category query
+        category = Category.objects.get(slug=slug, is_active=True)
+        
+        # Optimize products query with select_related and prefetch_related
+        products = Product.objects.filter(
+            category=category
+        ).select_related(
+            'category'
+        ).prefetch_related(
+            'images', 
+            'reviews'
+        )
+        
+        # Handle pagination parameters
+        page_size = request.query_params.get('page_size', 20)
+        page = request.query_params.get('page', 1)
+        
+        try:
+            page_size = int(page_size)
+            page = int(page)
+            if page_size > 100:  # Limit max page size
+                page_size = 100
+            if page < 1:
+                page = 1
+        except ValueError:
+            page_size = 20
+            page = 1
+            
+        # Calculate pagination
+        total_products = products.count()
+        start_index = (page - 1) * page_size
+        end_index = start_index + page_size
+        paginated_products = products[start_index:end_index]
+        
+        # Serialize data
+        serializer = ProductSerializer(paginated_products, many=True, context={'request': request})
+        
+        return Response({
+            'category': CategorySerializer(category, context={'request': request}).data,
+            'products': serializer.data,
+            'total_products': total_products,
+            'page': page,
+            'page_size': page_size,
+            'total_pages': (total_products + page_size - 1) // page_size,
+            'has_next': end_index < total_products,
+            'has_previous': page > 1
+        })
+        
+    except Category.DoesNotExist:
+        return Response(
+            {'error': 'Category not found'}, 
+            status=status.HTTP_404_NOT_FOUND
+        )

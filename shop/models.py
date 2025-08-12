@@ -6,6 +6,8 @@ from django.shortcuts import reverse
 from django.contrib.auth.models import User
 from django_countries.fields import CountryField
 from django.core.validators import RegexValidator
+from django.utils.text import slugify
+from django.apps import apps
     
 from django.contrib.auth import get_user_model
 
@@ -17,11 +19,40 @@ class Districts(models.Model):
     def __str__(self):
         return self.title
 
+
+class Category(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+    slug = models.SlugField(max_length=100, unique=True)
+    description = models.TextField(blank=True)
+    image = models.ImageField(upload_to='categories/', blank=True, null=True)
+    sort_order = models.PositiveIntegerField(default=0)
+    meta_title = models.CharField(max_length=200, blank=True)  # SEO
+    meta_description = models.CharField(max_length=300, blank=True)  # SEO
+
+    is_active = models.BooleanField(default=True)
+    
+    class Meta:
+        verbose_name_plural = "Categories"
+        ordering = ['sort_order', 'name']
+
+    def __str__(self):
+        return self.name
+
+    @property
+    def product_count(self):
+        Product = apps.get_model('shop', 'Product')
+        return Product.objects.filter(category=self.name).count()
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.name)
+        super().save(*args, **kwargs)
+
 ## THIS CHANGE FOR 'dummy' PRODUCTS
 class Product(models.Model):
     title = models.CharField(max_length=255)
     description = models.TextField()
-    category = models.CharField(max_length=100)
+    category = models.CharField(max_length=100)  # Temporarily back to CharField
     price = models.DecimalField(max_digits=10, decimal_places=2)
     discount_percentage = models.DecimalField(max_digits=5, decimal_places=2)
     rating = models.DecimalField(max_digits=3, decimal_places=2)

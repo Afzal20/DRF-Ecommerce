@@ -1,0 +1,124 @@
+{
+  "categories": [
+    {
+      "name": "beauty",
+      "display_name": "Beauty & Personal Care",
+      "description": "Cosmetics, makeup, and beauty products for all your beauty needs"
+    },
+    {
+      "name": "fragrances", 
+      "display_name": "Fragrances & Perfumes",
+      "description": "Premium perfumes and fragrances for men and women"
+    },
+    {
+      "name": "furniture",
+      "display_name": "Furniture & Home", 
+      "description": "Quality furniture pieces for home and office"
+    },
+    {
+      "name": "groceries",
+      "display_name": "Groceries & Food",
+      "description": "Fresh groceries, food items, and daily essentials"
+    },
+    {
+      "name": "home-decoration",
+      "display_name": "Home Decoration",
+      "description": "Decorative items and accessories for your home"
+    },
+    {
+      "name": "kitchen-accessories",
+      "display_name": "Kitchen Accessories", 
+      "description": "Essential kitchen tools and accessories for cooking"
+    },
+    {
+      "name": "laptops",
+      "display_name": "Laptops & Computers",
+      "description": "High-performance laptops and computers for work and gaming"
+    },
+    {
+      "name": "mens-shirts",
+      "display_name": "Men's Shirts",
+      "description": "Stylish and comfortable shirts for men"
+    },
+    {
+      "name": "mens-shoes", 
+      "display_name": "Men's Shoes",
+      "description": "Quality footwear for men for all occasions"
+    },
+    {
+      "name": "mens-watches",
+      "display_name": "Men's Watches",
+      "description": "Elegant and sporty watches for men"
+    },
+    {
+      "name": "mobile-accessories",
+      "display_name": "Mobile Accessories",
+      "description": "Accessories and gadgets for your mobile devices"
+    },
+    {
+      "name": "motorcycle",
+      "display_name": "Motorcycles & Vehicles", 
+      "description": "Motorcycles and related accessories"
+    },
+    {
+      "name": "skin-care",
+      "display_name": "Skin Care",
+      "description": "Skincare products for healthy and radiant skin"
+    },
+    {
+      "name": "smartphones",
+      "display_name": "Smartphones",
+      "description": "Latest smartphones with cutting-edge technology"
+    },
+    {
+      "name": "sports-accessories",
+      "display_name": "Sports Accessories",
+      "description": "Sports equipment and accessories for active lifestyle"
+    },
+    {
+      "name": "sunglasses",
+      "display_name": "Sunglasses",
+      "description": "Stylish sunglasses for UV protection and fashion"
+    },
+    {
+      "name": "tablets",
+      "display_name": "Tablets", 
+      "description": "Tablets for entertainment, work, and productivity"
+    },
+    {
+      "name": "tops",
+      "display_name": "Tops & T-Shirts",
+      "description": "Trendy tops and t-shirts for casual wear"
+    },
+    {
+      "name": "vehicle",
+      "display_name": "Vehicles",
+      "description": "Various vehicles and automotive accessories"
+    },
+    {
+      "name": "womens-bags",
+      "display_name": "Women's Bags",
+      "description": "Fashionable bags and handbags for women"
+    },
+    {
+      "name": "womens-dresses",
+      "display_name": "Women's Dresses", 
+      "description": "Beautiful dresses for women for all occasions"
+    },
+    {
+      "name": "womens-jewellery",
+      "display_name": "Women's Jewellery",
+      "description": "Elegant jewelry pieces for women"
+    },
+    {
+      "name": "womens-shoes",
+      "display_name": "Women's Shoes",
+      "description": "Stylish and comfortable shoes for women"
+    },
+    {
+      "name": "womens-watches",
+      "display_name": "Women's Watches",
+      "description": "Elegant and trendy watches for women"
+    }
+  ]
+}

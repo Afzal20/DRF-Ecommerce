@@ -3,12 +3,31 @@ from rest_framework import serializers
 from .models import (
     ContactMessage, Districts, HeroSection, OrderItem, Cart, Order,
     Slider, BillingAddress, Payment, Coupon, Refund, Product, ProductImage, ProductReview, TopSellingProducts, 
+    Category,  # Added Category import
 )
 
 class DistrictsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Districts
         fields = ['id', 'title']
+
+
+class CategorySerializer(serializers.ModelSerializer):
+    product_count = serializers.ReadOnlyField()
+    
+    class Meta:
+        model = Category
+        fields = '__all__'
+        read_only_fields = ['slug']
+
+
+class CategoryListSerializer(serializers.ModelSerializer):
+    """Simplified serializer for listing categories"""
+    product_count = serializers.ReadOnlyField()
+    
+    class Meta:
+        model = Category
+        fields = ['id', 'name', 'slug', 'description', 'image', 'product_count']
 
 class BillingAddressSerializer(serializers.ModelSerializer):
     class Meta:
@@ -76,15 +95,16 @@ class ProductReviewSerializer(serializers.ModelSerializer):
 class ProductSerializer(serializers.ModelSerializer):
     images = ProductImageSerializer(many=True, read_only=True)
     reviews = ProductReviewSerializer(many=True, read_only=True)
+    # category is a CharField in Product model, not a ForeignKey to Category
     
     class Meta:
         model = Product
         fields = [
-            'id', 'title', 'description', 'category', 'price', 'discount_percentage', 
-            'rating', 'stock', 'tags', 'brand', 'sku', 'weight', 'width', 'height', 
-            'depth', 'warranty_information', 'shipping_information', 'availability_status',
-            'return_policy', 'minimum_order_quantity', 'created_at', 'updated_at', 
-            'barcode', 'qr_code', 'thumbnail', 'images', 'reviews'
+            'id', 'title', 'description', 'category',
+            'price', 'discount_percentage', 'rating', 'stock', 'tags', 'brand', 'sku', 
+            'weight', 'width', 'height', 'depth', 'warranty_information', 'shipping_information', 
+            'availability_status', 'return_policy', 'minimum_order_quantity', 'created_at', 
+            'updated_at', 'barcode', 'qr_code', 'thumbnail', 'images', 'reviews'
         ]
         read_only_fields = ['id', 'created_at', 'updated_at']
 

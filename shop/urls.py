@@ -5,11 +5,13 @@ from .views import (
     AddToCartView, CartListView, ContactMessageCreateView, DistrictsViewSet, HeroSectionViewSet, 
     ProductDetailView, RemoveFromCartView, OrderViewSet, OrderItemViewSet, CartViewSet,
     SliderViewSet, BillingAddressViewSet, PaymentViewSet, CouponViewSet, RefundViewSet, TopSellingProductsViewSet, 
-    UpdateCartQuantityView, get_product_by_id, UserOrderList, ProductViewSet, ProductImageViewSet, ProductReviewViewSet
+    UpdateCartQuantityView, get_product_by_id, UserOrderList, ProductViewSet, ProductImageViewSet, ProductReviewViewSet,
+    CategoryViewSet, featured_categories, category_products,  # Added Category views
 )
 
 router = DefaultRouter()
 router.register(r'districts', DistrictsViewSet)
+router.register(r'categories', CategoryViewSet)  # Added categories endpoint
 router.register(r'products', ProductViewSet)
 router.register(r'product-images', ProductImageViewSet)
 router.register(r'product-reviews', ProductReviewViewSet)
@@ -29,6 +31,10 @@ urlpatterns = [
     
     path('products/<int:product_id>/', get_product_by_id, name='product-by-id'),
     path('top-selling-products/', TopSellingProductsViewSet.as_view({'get': 'list'}), name='top-selling-products'),
+
+    # Category-specific endpoints
+    path('categories/featured/', featured_categories, name='featured-categories'),
+    path('categories/<slug:slug>/products/', category_products, name='category-products'),
 
     path('cart/', CartListView.as_view(), name='cart-list'),
     path('cart/add/', AddToCartView.as_view(), name='add-to-cart'),

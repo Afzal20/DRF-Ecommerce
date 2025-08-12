@@ -17,7 +17,8 @@ from .models import (
     ProductImage, 
     ProductReview, 
     HeroSection, 
-    TopSellingProducts, 
+    TopSellingProducts,
+    Category,  # Added Category import
 )
 
 admin.site.site_header = 'Welcome to Ecom Admin Panel'
@@ -26,6 +27,32 @@ admin.site.index_title = 'Ecom Admin Panel'
 class DistrictsAdmin(admin.ModelAdmin):
     list_display = ['title']
     search_fields = ['title']
+
+
+class CategoryAdmin(admin.ModelAdmin):
+    list_display = ['name', 'slug', 'sort_order', 'product_count']
+    search_fields = ['name', 'description']
+    prepopulated_fields = {'slug': ('name',)}
+    readonly_fields = ['product_count']
+    list_editable = ['sort_order']
+    ordering = ['sort_order', 'name']
+    
+    fieldsets = (
+        ('Basic Information', {
+            'fields': ('name', 'slug', 'description', 'image')
+        }),
+        ('Status & Display', {
+            'fields': ('sort_order',)
+        }),
+        ('SEO Settings', {
+            'fields': ('meta_title', 'meta_description'),
+            'classes': ('collapse',)
+        }),
+    )
+    
+    def product_count(self, obj):
+        return obj.product_count
+    product_count.short_description = 'Products Count'
 
 class CartAdmin(admin.ModelAdmin):
     list_display = ['title', 'price', 'quantity', 'total', 'discountPercentage', 'discountedTotal']
@@ -356,6 +383,7 @@ class TopSellingProductsAdmin(admin.ModelAdmin):
 
 # Registering Models
 admin.site.register(Districts, DistrictsAdmin)
+admin.site.register(Category, CategoryAdmin)
 admin.site.register(Cart, CartAdmin)
 admin.site.register(Slider, SliderAdmin)
 admin.site.register(BillingAddress, BillingAddressAdmin)
