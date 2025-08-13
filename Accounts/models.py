@@ -92,4 +92,4 @@ class DeleteAccuntsList(models.Model):
     delete_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"Delete request for {self.user.email} at {self.requested_at}"
+        return f"Delete request for {self.email} at {self.delete_at:%Y-%m-%d %H:%M}"

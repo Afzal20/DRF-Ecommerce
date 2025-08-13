@@ -1,6 +1,6 @@
 from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
-from shop.models import Product, TopSellingProducts, Category, ProductImage, ProductReview
+from shop.models import Product, TopSellingProducts, Category, ProductImage, ProductReview, TopCategory
 from django.core.cache import cache
 
 # Clear product cache 
@@ -68,13 +68,13 @@ def clear_top_selling_products_cache_on_delete(sender, instance, **kwargs):
     cache.delete_pattern("*top_selling_products*")
 
 
-# Clear top selling products cache
-@receiver(post_save, sender=TopSellingProducts)
-def clear_top_selling_products_cache_on_save(sender, instance, **kwargs):
-    cache.delete_pattern("*top_selling_products*")
+# Clear top categories cache
+@receiver(post_save, sender=TopCategory)
+def clear_top_categories_cache_on_save(sender, instance, **kwargs):
+    cache.delete_pattern("*top_categories*")
 
 
-@receiver(post_delete, sender=TopSellingProducts)
-def clear_top_selling_products_cache_on_delete(sender, instance, **kwargs):
-    cache.delete_pattern("*top_selling_products*")
+@receiver(post_delete, sender=TopCategory)
+def clear_top_categories_cache_on_delete(sender, instance, **kwargs):
+    cache.delete_pattern("*top_categories*")
 

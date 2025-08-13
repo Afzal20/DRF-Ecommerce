@@ -181,18 +181,6 @@ def serve_media(request, path):
             mime_type, _ = mimetypes.guess_type(media_path)
             response = HttpResponse(f.read(), content_type=mime_type or 'application/octet-stream')
             response["Content-Disposition"] = f'inline; filename="{os.path.basename(media_path)}"'
-            
-            # Add cache headers for images (cache for 7 days)
-            response['Cache-Control'] = 'public, max-age=604800'  # 7 days 60*60*24*7
-            
-            # Add ETag for better caching
-            etag = hashlib.md5(f.read()).hexdigest()
-            f.seek(0)  # Reset file pointer
-            response['ETag'] = f'"{etag}"'
-            
-            # Check if client has cached version
-            if request.META.get('HTTP_IF_NONE_MATCH') == f'"{etag}"':
-                return HttpResponseNotModified()
                 
             return response
     else:

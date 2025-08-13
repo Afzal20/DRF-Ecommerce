@@ -2,6 +2,8 @@ from django.contrib import admin
 from django.utils.html import format_html
 from django.http import JsonResponse
 from django.urls import path
+from django.core.cache import cache
+from django.contrib import messages
 from .models import (
     ContactMessage, 
     Districts, 
@@ -508,6 +510,19 @@ class TopCategoryAdmin(admin.ModelAdmin):
     category_preview.short_description = "Category Preview"
 
 
+# Cache clearing admin actions
+def clear_all_cache_action(modeladmin, request, queryset):
+    """Admin action to clear all cache"""
+    try:
+        cache.clear()
+        messages.success(request, "All cache has been cleared successfully!")
+    except Exception as e:
+        messages.error(request, f"Error clearing cache: {str(e)}")
+
+clear_all_cache_action.short_description = "Clear all cache"
+
+
+
 # Registering Models
 admin.site.register(Districts, DistrictsAdmin)
 admin.site.register(Category, CategoryAdmin)
@@ -515,6 +530,9 @@ admin.site.register(Cart, CartAdmin)
 admin.site.register(Slider, SliderAdmin)
 admin.site.register(BillingAddress, BillingAddressAdmin)
 admin.site.register(Payment, PaymentAdmin)
+# Register admin actions
+admin.site.add_action(clear_all_cache_action)
+
 admin.site.register(Coupon, CouponAdmin)
 admin.site.register(Refund, RefundAdmin)
 admin.site.register(ContactMessage, ContactMessageAdmin)

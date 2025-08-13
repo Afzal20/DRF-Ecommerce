@@ -41,7 +41,7 @@ class Category(models.Model):
     @property
     def product_count(self):
         Product = apps.get_model('shop', 'Product')
-        return Product.objects.filter(category=self.name).count()
+        return Product.objects.filter(category=self).count()
 
     def save(self, *args, **kwargs):
         if not self.slug:
@@ -52,7 +52,7 @@ class Category(models.Model):
 class Product(models.Model):
     title = models.CharField(max_length=255)
     description = models.TextField()
-    category = models.CharField(max_length=100)  # Temporarily back to CharField
+    category = models.ForeignKey(Category, on_delete=models.CASCADE)
     price = models.DecimalField(max_digits=10, decimal_places=2)
     discount_percentage = models.DecimalField(max_digits=5, decimal_places=2)
     rating = models.DecimalField(max_digits=3, decimal_places=2)
@@ -105,7 +105,7 @@ class ProductReview(models.Model):
     product = models.ForeignKey(Product, related_name="reviews", on_delete=models.CASCADE)
     rating = models.PositiveSmallIntegerField()
     comment = models.TextField()
-    date = models.DateTimeField()
+    date = models.DateTimeField(auto_now_add=True)
     reviewer_name = models.CharField(max_length=100)
     reviewer_email = models.EmailField()
 
@@ -168,6 +168,15 @@ class Cart(models.Model):
     discountedTotal = models.DecimalField(max_digits=10, decimal_places=2)
     thumbnail = models.ImageField(upload_to='imagess/cart/thumbnails/', blank=True, null=True)
 
+class CartItems(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    items = models.ManyToManyField(Cart)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Shopping Cart for {self.user.username} - items: {self.items.count()}"
+
 class ContactMessage(models.Model):
     email = models.EmailField()
     subject = models.CharField(max_length=255)
@@ -228,6 +237,8 @@ class HeroSection(models.Model):
     button_2_Text = models.CharField(max_length=20)
     image = models.ImageField(upload_to='HeroSection/')
 
+    def __str__(self):
+        return self.title
 
 
 class TopSellingProducts(models.Model):

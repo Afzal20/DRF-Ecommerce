@@ -4,10 +4,11 @@ from django.core.management.base import BaseCommand
 from django.core.files import File
 from django.conf import settings
 from django.utils.dateparse import parse_datetime
-from shop.models import Product, ProductImage, ProductReview
+from shop.models import Product, ProductImage, ProductReview, Category
 from datetime import datetime
 import logging
 from django.db import transaction
+from django.utils.text import slugify
 
 logger = logging.getLogger(__name__)
 
@@ -98,6 +99,40 @@ class Command(BaseCommand):
         # Import products
         self._import_products(products_data)
 
+    def _get_or_create_category(self, category_name):
+        """Get or create a category by name"""
+        if not category_name:
+            # Create a default category if none provided
+            category_name = "Uncategorized"
+        
+        # First try to get existing category by name
+        try:
+            category = Category.objects.get(name=category_name)
+            return category
+        except Category.DoesNotExist:
+            pass
+        
+        # Generate unique slug
+        base_slug = slugify(category_name)
+        slug = base_slug
+        counter = 1
+        
+        # Keep trying until we find a unique slug
+        while Category.objects.filter(slug=slug).exists():
+            slug = f"{base_slug}-{counter}"
+            counter += 1
+        
+        category = Category.objects.create(
+            name=category_name,
+            slug=slug,
+            description=f'Category for {category_name} products',
+            is_active=True,
+            sort_order=0
+        )
+        
+        self.stdout.write(f'Created new category: {category_name} (slug: {slug})')
+        return category
+
     def _import_products(self, products_data):
         """Import products with transactions for data integrity"""
         created_count = 0
@@ -146,13 +181,17 @@ class Command(BaseCommand):
         # Parse dimensions
         dimensions = product_data.get('dimensions', {})
 
+        # Get or create category
+        category_name = product_data.get('category', '')
+        category = self._get_or_create_category(category_name)
+
         # Create or update product
         product, created = Product.objects.update_or_create(
             id=product_id,
             defaults={
                 'title': product_data.get('title', ''),
                 'description': product_data.get('description', ''),
-                'category': product_data.get('category', ''),
+                'category': category,
                 'price': float(product_data.get('price', 0)),
                 'discount_percentage': float(product_data.get('discountPercentage', 0)),
                 'rating': float(product_data.get('rating', 0)),
