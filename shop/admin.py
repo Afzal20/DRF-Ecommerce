@@ -522,7 +522,6 @@ def clear_all_cache_action(modeladmin, request, queryset):
 clear_all_cache_action.short_description = "Clear all cache"
 
 
-
 # Registering Models
 admin.site.register(Districts, DistrictsAdmin)
 admin.site.register(Category, CategoryAdmin)

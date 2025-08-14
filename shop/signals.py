@@ -78,3 +78,14 @@ def clear_top_categories_cache_on_save(sender, instance, **kwargs):
 def clear_top_categories_cache_on_delete(sender, instance, **kwargs):
     cache.delete_pattern("*top_categories*")
 
+
+# Clear slider cache
+@receiver(post_save, sender=TopCategory)
+def clear_top_categories_cache_on_save(sender, instance, **kwargs):
+    cache.delete_pattern("*slider_list*")
+
+
+@receiver(post_delete, sender=TopCategory)
+def clear_top_categories_cache_on_delete(sender, instance, **kwargs):
+    cache.delete_pattern("*slider_list*")
+

@@ -83,6 +83,11 @@ class SliderViewSet(viewsets.ModelViewSet):
     queryset = Slider.objects.all()
     serializer_class = SliderSerializer
 
+    @method_decorator(cache_page(60 * 60 * 2, key_prefix='slider_list'))
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
+
+
 class BillingAddressViewSet(viewsets.ModelViewSet):
     queryset = BillingAddress.objects.all()
     serializer_class = BillingAddressSerializer
