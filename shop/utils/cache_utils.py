@@ -22,16 +22,20 @@ def clear_cache_pattern(pattern):
     try:
         from django_redis import get_redis_connection
         redis_conn = get_redis_connection("default")
-        keys = redis_conn.keys(pattern)
+        # Use SCAN to avoid blocking Redis with KEYS on large datasets
+        keys = list(redis_conn.scan_iter(match=pattern))
         if keys:
             redis_conn.delete(*keys)
             logger.info(f"Cleared {len(keys)} cache keys matching pattern: {pattern}")
             return len(keys)
-        else:
-            logger.info(f"No cache keys found matching pattern: {pattern}")
-            return 0
+        logger.info(f"No cache keys found matching pattern: {pattern}")
+        return 0
     except Exception as e:
-        logger.error(f"Error clearing cache pattern {pattern}: {str(e)}")
+        # If not using Redis (e.g., FileBasedCache) or django-redis isn't installed,
+        # pattern deletion isn't supported. Fail gracefully without raising.
+        logger.warning(
+            f"Pattern cache clear skipped (non-Redis or error). Pattern='{pattern}'. Error: {str(e)}"
+        )
         return False
 
 def clear_model_cache(model_name):

@@ -107,7 +107,8 @@ AUTH_USER_MODEL = 'Accounts.CustomUserModel'
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.SessionAuthentication',
-        'Accounts.authentication.JWTAuthenticationWithCookies',
+        # 'Accounts.authentication.JWTAuthenticationWithCookies',
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
     ], 
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.AllowAny',
@@ -133,7 +134,8 @@ SWAGGER_SETTINGS = {
         'Bearer': {
             'type': 'apiKey',
             'name': 'Authorization',
-            'in': 'header'
+            'in': 'header',
+            'description': 'JWT Authorization header using the Bearer scheme. Example: "Authorization: Bearer {token}"'
         }
     },
     'USE_SESSION_AUTH': False,
@@ -145,6 +147,12 @@ SWAGGER_SETTINGS = {
         'delete',
         'patch'
     ],
+    'OPERATIONS_SORTER': 'alpha',
+    'TAGS_SORTER': 'alpha',
+    'DOC_EXPANSION': 'none',
+    'DEEP_LINKING': True,
+    'SHOW_EXTENSIONS': True,
+    'SHOW_COMMON_EXTENSIONS': True,
 }
 
 REDOC_SETTINGS = {

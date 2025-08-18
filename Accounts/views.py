@@ -121,22 +121,58 @@ class UserProfileView(generics.RetrieveUpdateAPIView):
     serializer_class = UserProfileSerializer
     permission_classes = [permissions.IsAuthenticated]
 
-    def get_object(self):
-        return self.request.user.profile
-
-    # get is for retrieving the user profile
+    @swagger_auto_schema(
+        operation_description="Get user profile",
+        responses={
+            200: UserProfileSerializer,
+            401: "Authentication credentials were not provided",
+            404: "User profile not found"
+        },
+        security=[{'Bearer': []}]
+    )
     def get(self, request, *args, **kwargs):
         profile = self.get_object()
         serializer = self.get_serializer(profile)
         return Response(serializer.data)
 
-    # put is for updating the user profile
+    @swagger_auto_schema(
+        operation_description="Update user profile (full update)",
+        request_body=UserProfileSerializer,
+        responses={
+            200: UserProfileSerializer,
+            400: "Invalid data provided",
+            401: "Authentication credentials were not provided",
+            404: "User profile not found"
+        },
+        security=[{'Bearer': []}]
+    )
     def put(self, request, *args, **kwargs):
         profile = self.get_object()
-        serializer = self.get_serializer(profile, data=request.data)
+        serializer = self.get_serializer(profile, data=request.data, partial=False)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data)
+
+    @swagger_auto_schema(
+        operation_description="Partially update user profile (including profile image)",
+        request_body=UserProfileSerializer,
+        responses={
+            200: UserProfileSerializer,
+            400: "Invalid data provided",
+            401: "Authentication credentials were not provided",
+            404: "User profile not found"
+        },
+        security=[{'Bearer': []}]
+    )
+    def patch(self, request, *args, **kwargs):
+        profile = self.get_object()
+        serializer = self.get_serializer(profile, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
+
+    def get_object(self):
+        return self.request.user.profile
 
 class CustomTokenRefreshView(TokenRefreshView):
     """
@@ -144,13 +180,13 @@ class CustomTokenRefreshView(TokenRefreshView):
     and sets them back as cookies in the response.
     """
     def post(self, request, *args, **kwargs):
-        # Try to get refresh token from cookie
-        refresh_token = request.COOKIES.get('refresh_token')
-
+        refresh_token = request.data.get('refresh')
         if not refresh_token:
-            return Response({'detail': 'Refresh token not provided.'}, status=status.HTTP_401_UNAUTHORIZED)
-
-        # Create data dict for serializer
+            auth_header = request.headers.get('Authorization', '')
+            if auth_header.startswith('Bearer '):
+                refresh_token = auth_header.split(' ', 1)[1].strip()
+        if not refresh_token:
+            return Response({'detail': 'Refresh token not provided in request.'}, status=status.HTTP_400_BAD_REQUEST)
         data = {'refresh': refresh_token}
 
         serializer = self.get_serializer(data=data)
@@ -164,35 +200,19 @@ class CustomTokenRefreshView(TokenRefreshView):
         new_refresh_token = serializer.validated_data.get('refresh', refresh_token)  # use new if provided
 
         response = Response({
-            'message': 'Login successful',
-            'user': {
-                'id': user.id,
-                'email': user.email,
-                'first_name': user.first_name,
-                'last_name': user.last_name,
-            },
+            'message': 'Token refreshed successfully',
+            # 'user': {
+            #     'id': user.id,
+            #     'email': user.email,
+            #     'first_name': user.first_name,
+            #     'last_name': user.last_name,
+            # },  # Disabled: no user context here
             'access_token': str(access_token),
-            'new_refresh_token': str(new_refresh_token)
+            'refresh_token': str(new_refresh_token)
         }, status=status.HTTP_200_OK)
 
-        # Set tokens in HTTP-only cookies
-        # response.set_cookie(
-        #     key='access_token',
-        #     value=access_token,
-        #     httponly=True,
-        #     secure=True,  # Only over HTTPS in production
-        #     samesite='Lax',
-        #     max_age=60 * 5,  # adjust to match your access token lifetime
-        # )
-
-        # response.set_cookie(
-        #     key='refresh_token',
-        #     value=new_refresh_token,
-        #     httponly=True,
-        #     secure=True,
-        #     samesite='Lax',
-        #     max_age=60 * 60 * 24 * 7,  # adjust to match your refresh token lifetime
-        # )
+    # Set tokens in HTTP-only cookies (DISABLED - handled by frontend via js-cookie)
+    # response.set_cookie(...)
 
         return response
     
@@ -202,10 +222,15 @@ class CustomTokenVerifyView(TokenVerifyView):
     If the token is valid, it returns a success response
     """
     def post(self, request, *args, **kwargs):
-        access_token = request.COOKIES.get('access_token')
-
+        # access_token = request.COOKIES.get('access_token')  # DISABLED - expect token from header/body
+        access_token = None
+        auth_header = request.headers.get('Authorization', '')
+        if auth_header.startswith('Bearer '):
+            access_token = auth_header.split(' ', 1)[1].strip()
         if not access_token:
-            return Response({'detail': 'Access token not provided.'}, status=status.HTTP_401_UNAUTHORIZED)
+            access_token = request.data.get('token')
+        if not access_token:
+            return Response({'detail': 'Access token not provided (expected in Authorization header or body).'}, status=status.HTTP_401_UNAUTHORIZED)
 
         data = {'token': access_token}
         serializer = self.get_serializer(data=data)
@@ -226,9 +251,9 @@ class LogoutView(APIView):
     def post(self, request, *args, **kwargs):
 
         response = Response({'detail': 'Logged out successfully'}, status=status.HTTP_200_OK)
-        # Clear cookies
-        response.delete_cookie('access_token')
-        response.delete_cookie('refresh_token')
+    # Clear cookies (DISABLED - tokens handled on client via js-cookie)
+    # response.delete_cookie('access_token')
+    # response.delete_cookie('refresh_token')
 
         return response
     
@@ -327,13 +352,18 @@ class TokenVerificationView(APIView):
         }
     )
     def post(self, request, *args, **kwargs):
-        # Get access token from cookies
-        access_token = request.COOKIES.get('access_token')
-        
+        # Get access token from cookies (DISABLED - expect in header/body)
+        # access_token = request.COOKIES.get('access_token')
+        access_token = None
+        auth_header = request.headers.get('Authorization', '')
+        if auth_header.startswith('Bearer '):
+            access_token = auth_header.split(' ', 1)[1].strip()
+        if not access_token:
+            access_token = request.data.get('token')
         if not access_token:
             return Response({
                 'valid': False,
-                'message': 'Access token not provided in cookies'
+                'message': 'Access token not provided (expected in Authorization header or in request body as "token")'
             }, status=status.HTTP_401_UNAUTHORIZED)
         
         # Use serializer to validate token

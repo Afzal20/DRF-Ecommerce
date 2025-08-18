@@ -234,7 +234,9 @@ class HeroSection(models.Model):
     title = models.CharField(max_length=255)
     offer = models.CharField(max_length=255)
     button_1_Text = models.CharField(max_length=20)
+    button_1_navigate_url = models.URLField(max_length=2000, default="")
     button_2_Text = models.CharField(max_length=20)
+    button_2_navigate_url = models.URLField(max_length=2000, default="")
     image = models.ImageField(upload_to='HeroSection/')
 
     def __str__(self):

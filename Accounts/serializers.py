@@ -54,7 +54,6 @@ class UserProfileSerializer(serializers.ModelSerializer):
         fields = '__all__'
         read_only_fields = ('user', 'created_at', 'updated_at')
 
-
 class ChangePasswordSerializer(serializers.Serializer):
     old_password = serializers.CharField(max_length=128, write_only=True)
     new_password = serializers.CharField(max_length=128, write_only=True)
