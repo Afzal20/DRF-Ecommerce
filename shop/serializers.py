@@ -1,7 +1,7 @@
 from django.core.validators import RegexValidator
 from rest_framework import serializers
 from .models import (
-    ContactMessage, Districts, HeroSection, OrderItem, Cart, Order,
+    CartItem, ContactMessage, Districts, HeroSection, OrderItem, Cart, Order,
     Slider, BillingAddress, Payment, Coupon, Refund, Product, ProductImage, ProductReview, TopSellingProducts, 
     Category, TopCategory,  # Added TopCategory import
 )
@@ -54,8 +54,6 @@ class RefundSerializer(serializers.ModelSerializer):
         model = Refund
         fields = ['id', 'order', 'reason', 'accepted', 'email']
 
-# Admin-related Serializers
-
 class AdminBillingAddressSerializer(BillingAddressSerializer):
     class Meta(BillingAddressSerializer.Meta):
         fields = BillingAddressSerializer.Meta.fields
@@ -68,18 +66,6 @@ class AdminCouponSerializer(CouponSerializer):
     class Meta(CouponSerializer.Meta):
         fields = CouponSerializer.Meta.fields
 
-# from rest_framework import serializers
-# from .models import Cart
-
-class CartSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Cart
-        fields = '__all__'
-
-class AddToCartSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Cart
-        fields = ['title', 'price', 'quantity', 'total', 'discountPercentage', 'discountedTotal', 'thumbnail']
 
 # Product Serializers
 class ProductImageSerializer(serializers.ModelSerializer):
@@ -233,3 +219,63 @@ class TopCategorySimpleSerializer(serializers.ModelSerializer):
             'id', 'category', 'category_name', 'category_slug', 'category_description', 
             'category_image', 'category_product_count', 'is_active'
         ]
+
+
+class CartSerializer(serializers.ModelSerializer):
+    product = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Cart
+        fields = '__all__'
+
+    @staticmethod
+    def get_product(obj):
+        return obj.product.name
+
+
+class CartItemSerializer(serializers.ModelSerializer):
+    item_id = serializers.SerializerMethodField()
+    item_title = serializers.SerializerMethodField()
+    item_price = serializers.SerializerMethodField()
+    item_image = serializers.SerializerMethodField()
+
+    class Meta:
+        model = CartItem
+        fields = [
+            "id",
+            "item_id",
+            "item_title",
+            "item_price",
+            "item_image",
+            "quantity",
+            "line_item_total",
+        ]
+
+    def get_item_id(self, obj):
+        return obj.item.id
+
+    def get_item_title(self, obj):
+        # Your Product model uses 'title' field
+        return obj.item.title
+
+    def get_item_price(self, obj):
+        return obj.item.price
+    
+    def get_item_image(self, obj):
+        request = self.context.get('request')
+        
+        # First try the thumbnail field
+        if hasattr(obj.item, 'thumbnail') and obj.item.thumbnail:
+            if request:
+                return request.build_absolute_uri(obj.item.thumbnail.url)
+            return obj.item.thumbnail.url
+        
+        # Then try related ProductImage objects
+        if hasattr(obj.item, 'images') and obj.item.images.exists():
+            first_image = obj.item.images.first()
+            if hasattr(first_image, 'image') and first_image.image:
+                if request:
+                    return request.build_absolute_uri(first_image.image.url)
+                return first_image.image.url
+        
+        return None

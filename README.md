@@ -6,30 +6,23 @@
 ### Getting Started
 
 1. Clone this project using the following command:
-    ```bash
-    git clone https://github.com/Afzal20/DRF_AUTH_with_Cookies.git
-    ```
+```bash
+git clone https://github.com/Afzal20/DRF-Ecommerce.git
+```
 
-2. Add your app to the `INSTALLED_APPS` list in the `settings.py` file:
-    ```python
-    INSTALLED_APPS = [
-         ...,
-         'your_app_name',
-    ]
-    ```
+or 
 
-3. Update the email backend in the `settings.py` file:
-    ```python
-    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-    ```
+```bash
+git clone https://github.com/Afzal20/DRF-Ecommerce/tree/dummy-data-models
+```
 
-4. Update other email-related settings in the `settings.py` file as needed:
-    ```python
-    EMAIL_HOST = 'your_email_host'
-    EMAIL_PORT = your_email_port
-    EMAIL_USE_TLS = True  # or False, depending on your setup
-    EMAIL_HOST_USER = 'your_email_username'
-    EMAIL_HOST_PASSWORD = 'your_email_password'
-    DEFAULT_FROM_EMAIL = 'your_default_from_email'
-    ```
-    Replace the placeholders with the appropriate values for your email service provider.
+2. dump data from .sqlite3 file sing the following command:
+```bash  
+python manage.py dumpdata --natural-primary --natural-foreign --indent 4 > data.json
+```
+
+3. If you want to load data to you own database server like postgresql server
+```bash 
+python manage.py loaddata data.json
+```
+

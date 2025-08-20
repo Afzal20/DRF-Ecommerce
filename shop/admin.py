@@ -5,6 +5,7 @@ from django.urls import path
 from django.core.cache import cache
 from django.contrib import messages
 from .models import (
+    CartItem,
     ContactMessage, 
     Districts, 
     Order, 
@@ -58,9 +59,17 @@ class CategoryAdmin(admin.ModelAdmin):
     product_count.short_description = 'Products Count'
 
 class CartAdmin(admin.ModelAdmin):
-    list_display = ['title', 'price', 'quantity', 'total', 'discountPercentage', 'discountedTotal']
-    search_fields = ['title']
-    list_filter = ['discountPercentage']
+    list_display = ['user', 'cart_total']
+    search_fields = ['user__username']
+    list_filter = []
+
+    def cart_total(self, obj):
+        # Calculate total price for the cart
+        total = 0
+        for item in obj.cartitem_set.all():
+            total += item.line_item_total
+        return total
+    cart_total.short_description = 'Total Price'
 
 class BillingAddressAdmin(admin.ModelAdmin):
     list_display = ('user', 'street_address', 'apartment_address', 'country', 'zip')
@@ -545,3 +554,10 @@ admin.site.register(Product, ProductAdmin)
 admin.site.register(ProductImage, ProductImageAdmin)
 admin.site.register(ProductReview, ProductReviewAdmin)
 admin.site.register(HeroSection, HeroSectionAdmin)
+
+# Register CartItem in admin
+@admin.register(CartItem)
+class CartItemAdmin(admin.ModelAdmin):
+    list_display = ('cart', 'item', 'quantity', 'line_item_total')
+    search_fields = ('cart__id', 'item__title')
+    list_filter = ('cart', 'item')
