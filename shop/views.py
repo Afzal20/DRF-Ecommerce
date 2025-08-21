@@ -1,3 +1,6 @@
+from rest_framework.generics import ListAPIView
+
+# API endpoint to get all cart items for the authenticated user
 from django.shortcuts import render
 import jwt
 from rest_framework import viewsets
@@ -13,13 +16,13 @@ from rest_framework.generics import ListAPIView, DestroyAPIView
 from decimal import Decimal
 
 from .models import (
-    Cart, CartItem, ContactMessage, HeroSection, Districts, Order, OrderItem,
+    Cart, ContactMessage, HeroSection, Districts, Order, OrderItem,
     Slider, BillingAddress, Payment, Coupon, Refund, Product, ProductImage, ProductReview, TopSellingProducts,
     TopCategory,
     Category,  # Added Category import
 )
 from .serializers import (
-    CartItemSerializer, CartSerializer, ContactMessageSerializer, HeroSectionSerializer,
+    CartSerializer, ContactMessageSerializer, HeroSectionSerializer,
     DistrictsSerializer, OrderSerializer, OrderItemSerializer, SliderSerializer, 
     BillingAddressSerializer, PaymentSerializer, CouponSerializer, RefundSerializer,
     ProductSerializer, ProductImageSerializer, ProductReviewSerializer, TopSellingProductsSerializer,
@@ -40,7 +43,6 @@ import mimetypes
 from django.conf import settings
 
 # ModelViewSets for the basic CRUD operations
-
 class DistrictsViewSet(viewsets.ModelViewSet):
     queryset = Districts.objects.all()
     serializer_class = DistrictsSerializer
@@ -350,198 +352,7 @@ class CartTokenMixin:
         return token
 
 
-class CartUpdateAPIMixin:
-    def update_cart(self):
-        cart = self.cart or getattr(self, "cart", None)
-        if not cart:
-            return None
-
-        subtotal = Decimal('0.00')
-        for item in cart.cartitem_set.all():
-            subtotal += item.line_item_total
-
-        cart.subtotal = subtotal
-        cart.tax_total = cart.subtotal * cart.tax_percentage
-        cart.total = cart.subtotal + cart.tax_total
-        cart.save()
-
-        return cart
-
-
-
-class CartAPIView(CartTokenMixin, CartUpdateAPIMixin, APIView):
+class CartAPIView(viewsets.ModelViewSet):
+    queryset = Cart.objects.all()
     serializer_class = CartSerializer
-    token_param = "token"
-    cart = None
-
-    def get_cart(self):
-        data, cart_obj, response_status = self.get_cart_from_token()
-        if cart_obj == None or not cart_obj.active:
-            cart = Cart()
-            cart.tax_percentage = Decimal('0.075')  # Use Decimal instead of float
-            if self.request.user.is_authenticated:
-                cart.user = self.request.user
-            cart.save()
-            data = {
-                "cart_id": str(cart.id)
-            }
-            self.create_token(data)
-            cart_obj = cart
-
-        return cart_obj
-
-    def get(self, request, format=None):
-        cart = self.get_cart()
-        self.cart = cart
-        self.update_cart()
-        items = CartItemSerializer(cart.cartitem_set.all(), many=True, context={'request': request})
-        
-        data = {
-            "token": self.token,
-            "cart": cart.id,
-            "total": cart.total,
-            "subtotal": cart.subtotal,
-            "tax_total": cart.tax_total,
-            "count": cart.cartitem_set.count(),
-            "items": items.data,
-        }
-        return Response(data)
-
-    def post(self, request, format=None):
-        # Get cart using token-based authentication (consistent with GET)
-        cart = self.get_cart()
-        self.cart = cart
-        
-        product_id = request.data.get('product_id', None)
-        quantity = int(request.data.get('quantity', 1))
-        
-        if product_id is not None:
-            try:
-                product_obj = Product.objects.get(id=product_id)
-            except Product.DoesNotExist:
-                return Response({"error": "Product does not exist."}, status=status.HTTP_400_BAD_REQUEST)
-
-            # Check if item already exists in cart
-            cart_item, created = CartItem.objects.get_or_create(
-                cart=cart,
-                item=product_obj,
-                defaults={
-                    'quantity': quantity,
-                    'line_item_total': Decimal(str(product_obj.price)) * Decimal(str(quantity))
-                }
-            )
-            
-            if not created:
-                # Update existing item
-                cart_item.quantity += quantity
-                cart_item.line_item_total = Decimal(str(product_obj.price)) * Decimal(str(cart_item.quantity))
-                cart_item.save()
-                added = False
-            else:
-                added = True
-            
-            # Update cart totals
-            self.update_cart()
-            
-            # Get updated items for response
-            items = CartItemSerializer(cart.cartitem_set.all(), many=True, context={'request': request})
-            
-            data = {
-                "token": self.token,
-                "cart": cart.id,
-                "added": added,
-                "updated": not added,
-                "total": cart.total,
-                "subtotal": cart.subtotal,
-                "tax_total": cart.tax_total,
-                "count": cart.cartitem_set.count(),
-                "items": items.data,
-            }
-            return Response(data, status=status.HTTP_200_OK)
-        else:
-            return Response({"error": "No product_id provided."}, status=status.HTTP_400_BAD_REQUEST)
-
-    def put(self, request, format=None):
-        """Update cart item quantity"""
-        cart = self.get_cart()
-        self.cart = cart
-        
-        product_id = request.data.get('product_id', None)
-        quantity = request.data.get('quantity', None)
-        
-        if product_id is None or quantity is None:
-            return Response({"error": "product_id and quantity are required."}, status=status.HTTP_400_BAD_REQUEST)
-        
-        try:
-            product_obj = Product.objects.get(id=product_id)
-            cart_item = CartItem.objects.get(cart=cart, item=product_obj)
-            
-            if int(quantity) <= 0:
-                cart_item.delete()
-                removed = True
-            else:
-                cart_item.quantity = int(quantity)
-                cart_item.line_item_total = Decimal(str(product_obj.price)) * Decimal(str(cart_item.quantity))
-                cart_item.save()
-                removed = False
-            
-            # Update cart totals
-            self.update_cart()
-            
-            # Get updated items for response
-            items = CartItemSerializer(cart.cartitem_set.all(), many=True, context={'request': request})
-            
-            data = {
-                "token": self.token,
-                "cart": cart.id,
-                "removed": removed,
-                "total": cart.total,
-                "subtotal": cart.subtotal,
-                "tax_total": cart.tax_total,
-                "count": cart.cartitem_set.count(),
-                "items": items.data,
-            }
-            return Response(data, status=status.HTTP_200_OK)
-            
-        except Product.DoesNotExist:
-            return Response({"error": "Product does not exist."}, status=status.HTTP_400_BAD_REQUEST)
-        except CartItem.DoesNotExist:
-            return Response({"error": "Item not found in cart."}, status=status.HTTP_404_NOT_FOUND)
-
-    def delete(self, request, format=None):
-        """Remove item from cart"""
-        cart = self.get_cart()
-        self.cart = cart
-        
-        product_id = request.data.get('product_id', None)
-        
-        if product_id is None:
-            return Response({"error": "product_id is required."}, status=status.HTTP_400_BAD_REQUEST)
-        
-        try:
-            product_obj = Product.objects.get(id=product_id)
-            cart_item = CartItem.objects.get(cart=cart, item=product_obj)
-            cart_item.delete()
-            
-            # Update cart totals
-            self.update_cart()
-            
-            # Get updated items for response
-            items = CartItemSerializer(cart.cartitem_set.all(), many=True)
-            
-            data = {
-                "token": self.token,
-                "cart": cart.id,
-                "removed": True,
-                "total": cart.total,
-                "subtotal": cart.subtotal,
-                "tax_total": cart.tax_total,
-                "count": cart.cartitem_set.count(),
-                "items": items.data,
-            }
-            return Response(data, status=status.HTTP_200_OK)
-            
-        except Product.DoesNotExist:
-            return Response({"error": "Product does not exist."}, status=status.HTTP_400_BAD_REQUEST)
-        except CartItem.DoesNotExist:
-            return Response({"error": "Item not found in cart."}, status=status.HTTP_404_NOT_FOUND)
+    permission_classes = [IsAuthenticated]

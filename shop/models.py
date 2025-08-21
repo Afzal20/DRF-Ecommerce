@@ -8,6 +8,8 @@ from django_countries.fields import CountryField
 from django.core.validators import RegexValidator
 from django.utils.text import slugify
 from django.apps import apps
+from decimal import Decimal
+from django.conf import settings
     
 from django.contrib.auth import get_user_model
 
@@ -111,54 +113,19 @@ class ProductReview(models.Model):
 
     def __str__(self):
         return f"Review by {self.reviewer_name} ({self.rating}★)"
-
-
-# Updated models.py
-from decimal import Decimal
-from django.db import models
-from django.conf import settings
-
-class CartManager(models.Manager):
-    def new_or_get(self, request):
-        cart_id = request.session.get("cart_id", None)
-        cart = None
-        if cart_id:
-            cart = self.get_queryset().filter(id=cart_id).first()
-        if not cart:
-            cart = self.create()
-            request.session["cart_id"] = cart.id
-        return cart
     
-
 class Cart(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.CASCADE)
-    items = models.ManyToManyField('Product', through='CartItem')
+    products = models.ManyToManyField('Product', blank=True)
     updated = models.DateTimeField(auto_now_add=False, auto_now=True)
     subtotal = models.DecimalField(max_digits=50, decimal_places=2, default=Decimal('0.00'))
     tax_percentage = models.DecimalField(max_digits=10, decimal_places=5, default=Decimal('0.085'))
     tax_total = models.DecimalField(max_digits=50, decimal_places=2, default=Decimal('0.00'))
     total = models.DecimalField(max_digits=50, decimal_places=2, default=Decimal('0.00'))
     active = models.BooleanField(default=True)
-    objects = CartManager()
 
     def __str__(self):
         return str(self.id)
-
-
-class CartItem(models.Model):
-    cart = models.ForeignKey(Cart, on_delete=models.CASCADE)
-    item = models.ForeignKey('Product', on_delete=models.CASCADE)
-    quantity = models.PositiveIntegerField(default=1)
-    line_item_total = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'))
-
-    def __str__(self):
-        return f"{self.item.title} x {self.quantity} in Cart {self.cart.id}"
-    
-    def save(self, *args, **kwargs):
-        # Auto-calculate line_item_total on save if not provided
-        if not self.line_item_total or self.line_item_total == Decimal('0.00'):
-            self.line_item_total = Decimal(str(self.item.price)) * Decimal(str(self.quantity))
-        super().save(*args, **kwargs)
 
 class Slider(models.Model):
     image = models.ImageField(upload_to='ImageSlider/')

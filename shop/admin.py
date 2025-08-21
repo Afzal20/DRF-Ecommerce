@@ -5,7 +5,6 @@ from django.urls import path
 from django.core.cache import cache
 from django.contrib import messages
 from .models import (
-    CartItem,
     ContactMessage, 
     Districts, 
     Order, 
@@ -32,7 +31,15 @@ class DistrictsAdmin(admin.ModelAdmin):
     list_display = ['title']
     search_fields = ['title']
 
+# Add this inline class to your admin.py file
+class ProductInline(admin.TabularInline):
+    model = Product
+    extra = 1
+    fields = ('title', 'price', 'stock', 'availability_status')  # Customize fields as needed
+    readonly_fields = ('created_at',)  # Make some fields read-only if desired
+    show_change_link = True  # Allows clicking through to edit the product
 
+# Update your CategoryAdmin to include the inline
 class CategoryAdmin(admin.ModelAdmin):
     list_display = ['name', 'slug', 'sort_order', 'product_count']
     search_fields = ['name', 'description']
@@ -40,6 +47,7 @@ class CategoryAdmin(admin.ModelAdmin):
     readonly_fields = ['product_count']
     list_editable = ['sort_order']
     ordering = ['sort_order', 'name']
+    inlines = [ProductInline]  # Add this line to include products in category admin
     
     fieldsets = (
         ('Basic Information', {
@@ -58,18 +66,38 @@ class CategoryAdmin(admin.ModelAdmin):
         return obj.product_count
     product_count.short_description = 'Products Count'
 
+    
+class CartProductInline(admin.TabularInline):
+    model = Cart.products.through  # Use the through model for the M2M relationship
+    extra = 1
+    fields = ('product', 'get_price', 'get_stock_status')
+    readonly_fields = ('get_price', 'get_stock_status')
+    
+    def get_price(self, obj):
+        return f"${obj.product.price}"
+    get_price.short_description = 'Price'
+    
+    def get_stock_status(self, obj):
+        if obj.product.stock > 0:
+            return format_html('<span style="color: green;">In Stock</span>')
+        return format_html('<span style="color: red;">Out of Stock</span>')
+    get_stock_status.short_description = 'Stock Status'
+
 class CartAdmin(admin.ModelAdmin):
-    list_display = ['user', 'cart_total']
+    list_display = ['id', 'user', 'cart_total', 'product_count', 'active']
     search_fields = ['user__username']
-    list_filter = []
+    list_filter = ['active']
+    inlines = [CartProductInline]  # Add the inline here
+    exclude = ('products',)  # Exclude the original products field from the form
 
     def cart_total(self, obj):
-        # Calculate total price for the cart
-        total = 0
-        for item in obj.cartitem_set.all():
-            total += item.line_item_total
-        return total
+        return f"${obj.total}"
     cart_total.short_description = 'Total Price'
+    
+    def product_count(self, obj):
+        return obj.products.count()
+    product_count.short_description = 'Products Count'
+
 
 class BillingAddressAdmin(admin.ModelAdmin):
     list_display = ('user', 'street_address', 'apartment_address', 'country', 'zip')
@@ -554,10 +582,3 @@ admin.site.register(Product, ProductAdmin)
 admin.site.register(ProductImage, ProductImageAdmin)
 admin.site.register(ProductReview, ProductReviewAdmin)
 admin.site.register(HeroSection, HeroSectionAdmin)
-
-# Register CartItem in admin
-@admin.register(CartItem)
-class CartItemAdmin(admin.ModelAdmin):
-    list_display = ('cart', 'item', 'quantity', 'line_item_total')
-    search_fields = ('cart__id', 'item__title')
-    list_filter = ('cart', 'item')

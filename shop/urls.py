@@ -1,13 +1,12 @@
-from django.urls import path, include
-from rest_framework.routers import DefaultRouter
-
 from .views import (
     ContactMessageCreateView, DistrictsViewSet, HeroSectionViewSet, 
     ProductDetailView, OrderViewSet, OrderItemViewSet, CartAPIView,
     SliderViewSet, BillingAddressViewSet, PaymentViewSet, CouponViewSet, RefundViewSet, TopSellingProductsViewSet, 
     TopCategoryViewSet, get_product_by_id, UserOrderList, ProductViewSet, ProductImageViewSet, ProductReviewViewSet,
-    CategoryViewSet, featured_categories, category_products,  # Added Category views
+    CategoryViewSet, featured_categories, category_products,
 )
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
 
 router = DefaultRouter()
 router.register(r'districts', DistrictsViewSet)
@@ -23,6 +22,8 @@ router.register(r'payments', PaymentViewSet)
 router.register(r'coupons', CouponViewSet)
 router.register(r'refunds', RefundViewSet)
 router.register(r'hero-sections', HeroSectionViewSet)
+router.register(r'cart', CartAPIView)
+
 
 urlpatterns = [
     path('', include(router.urls)),
@@ -38,7 +39,4 @@ urlpatterns = [
 
     # Contact form
     path('contact/', ContactMessageCreateView.as_view(), name='contact-message'),
-
-    # Cart API (token + session based)
-    path('cart/', CartAPIView.as_view(), name='cart'),
 ]

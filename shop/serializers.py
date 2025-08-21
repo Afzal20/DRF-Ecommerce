@@ -1,7 +1,7 @@
 from django.core.validators import RegexValidator
 from rest_framework import serializers
 from .models import (
-    CartItem, ContactMessage, Districts, HeroSection, OrderItem, Cart, Order,
+    ContactMessage, Districts, HeroSection, OrderItem, Cart, Order,
     Slider, BillingAddress, Payment, Coupon, Refund, Product, ProductImage, ProductReview, TopSellingProducts, 
     Category, TopCategory,  # Added TopCategory import
 )
@@ -221,61 +221,17 @@ class TopCategorySimpleSerializer(serializers.ModelSerializer):
         ]
 
 
+
 class CartSerializer(serializers.ModelSerializer):
-    product = serializers.SerializerMethodField()
+    cart_items = serializers.SerializerMethodField()
 
     class Meta:
         model = Cart
-        fields = '__all__'
-
-    @staticmethod
-    def get_product(obj):
-        return obj.product.name
-
-
-class CartItemSerializer(serializers.ModelSerializer):
-    item_id = serializers.SerializerMethodField()
-    item_title = serializers.SerializerMethodField()
-    item_price = serializers.SerializerMethodField()
-    item_image = serializers.SerializerMethodField()
-
-    class Meta:
-        model = CartItem
         fields = [
-            "id",
-            "item_id",
-            "item_title",
-            "item_price",
-            "item_image",
-            "quantity",
-            "line_item_total",
+            'id', 'user', 'subtotal', 'tax_percentage', 'tax_total', 'total', 'active', 'cart_items'
         ]
+        read_only_fields = ['id']
 
-    def get_item_id(self, obj):
-        return obj.item.id
-
-    def get_item_title(self, obj):
-        # Your Product model uses 'title' field
-        return obj.item.title
-
-    def get_item_price(self, obj):
-        return obj.item.price
-    
-    def get_item_image(self, obj):
-        request = self.context.get('request')
-        
-        # First try the thumbnail field
-        if hasattr(obj.item, 'thumbnail') and obj.item.thumbnail:
-            if request:
-                return request.build_absolute_uri(obj.item.thumbnail.url)
-            return obj.item.thumbnail.url
-        
-        # Then try related ProductImage objects
-        if hasattr(obj.item, 'images') and obj.item.images.exists():
-            first_image = obj.item.images.first()
-            if hasattr(first_image, 'image') and first_image.image:
-                if request:
-                    return request.build_absolute_uri(first_image.image.url)
-                return first_image.image.url
-        
-        return None
+    def get_cart_items(self, obj):
+        items = obj.products.all()
+        return ProductSerializer(items, many=True).data
