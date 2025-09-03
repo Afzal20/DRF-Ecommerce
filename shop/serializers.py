@@ -227,11 +227,23 @@ class CartSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Cart
-        fields = [
-            'id', 'user', 'subtotal', 'tax_percentage', 'tax_total', 'total', 'active', 'cart_items'
-        ]
-        read_only_fields = ['id']
+        fields = '__all__'
+        read_only_fields = ['id', 'user']  # Make user read-only
 
     def get_cart_items(self, obj):
         items = obj.products.all()
         return ProductSerializer(items, many=True).data
+
+    def create(self, validated_data):
+        # Always set user from context/request, not from client
+        request = self.context.get('request', None)
+        if request and hasattr(request, 'user') and request.user.is_authenticated:
+            validated_data['user'] = request.user
+        return super().create(validated_data)
+
+    def update(self, instance, validated_data):
+        # Always set user from context/request, not from client
+        request = self.context.get('request', None)
+        if request and hasattr(request, 'user') and request.user.is_authenticated:
+            validated_data['user'] = request.user
+        return super().update(instance, validated_data)

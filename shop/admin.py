@@ -83,17 +83,23 @@ class CartProductInline(admin.TabularInline):
         return format_html('<span style="color: red;">Out of Stock</span>')
     get_stock_status.short_description = 'Stock Status'
 
+
+
 class CartAdmin(admin.ModelAdmin):
-    list_display = ['id', 'user', 'cart_total', 'product_count', 'active']
+    list_display = ['user', 'product_count', 'cart_total', 'active', 'updated']
     search_fields = ['user__username']
     list_filter = ['active']
-    inlines = [CartProductInline]  # Add the inline here
-    exclude = ('products',)  # Exclude the original products field from the form
+    exclude = ('products',)
+    inlines = [CartProductInline]
+
+    def get_username(self, obj):
+        return obj.user.username if obj.user else "Anonymous"
+    get_username.short_description = 'Username'
 
     def cart_total(self, obj):
-        return f"${obj.total}"
+        return f"${obj.get_total()}"  
     cart_total.short_description = 'Total Price'
-    
+
     def product_count(self, obj):
         return obj.products.count()
     product_count.short_description = 'Products Count'

@@ -22,7 +22,8 @@ router.register(r'payments', PaymentViewSet)
 router.register(r'coupons', CouponViewSet)
 router.register(r'refunds', RefundViewSet)
 router.register(r'hero-sections', HeroSectionViewSet)
-router.register(r'cart', CartAPIView)
+# router.register(r'cart', CartAPIView)
+router.register(r'cart', CartAPIView, basename='cart')
 
 
 urlpatterns = [

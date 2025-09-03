@@ -114,18 +114,19 @@ class ProductReview(models.Model):
     def __str__(self):
         return f"Review by {self.reviewer_name} ({self.rating}★)"
     
+
 class Cart(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.CASCADE)
     products = models.ManyToManyField('Product', blank=True)
     updated = models.DateTimeField(auto_now_add=False, auto_now=True)
-    subtotal = models.DecimalField(max_digits=50, decimal_places=2, default=Decimal('0.00'))
-    tax_percentage = models.DecimalField(max_digits=10, decimal_places=5, default=Decimal('0.085'))
-    tax_total = models.DecimalField(max_digits=50, decimal_places=2, default=Decimal('0.00'))
-    total = models.DecimalField(max_digits=50, decimal_places=2, default=Decimal('0.00'))
     active = models.BooleanField(default=True)
 
     def __str__(self):
-        return str(self.id)
+        return f"Cart ID {str(self.id)}"
+
+    def get_total(self):
+        # assuming Product model has a 'price' field
+        return sum(p.price for p in self.products.all())
 
 class Slider(models.Model):
     image = models.ImageField(upload_to='ImageSlider/')

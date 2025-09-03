@@ -309,50 +309,21 @@ def category_products(request, slug):
             {'error': 'Category not found'}, 
             status=status.HTTP_404_NOT_FOUND
         )
-    
-    
-class CartTokenMixin:
-    token_param = "token"
-    token = None
-
-    def get_cart_from_token(self):
-        """
-        Reads token from request (query param or body) and returns
-        (data, cart_instance, response_status).
-        """
-        token = (
-            self.request.query_params.get(self.token_param)
-            or self.request.data.get(self.token_param)
-        )
-        self.token = token
-
-        if not token:
-            return None, None, status.HTTP_400_BAD_REQUEST
-
-        try:
-            data = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
-            cart_id = data.get("cart_id")
-        except Exception:
-            return None, None, status.HTTP_400_BAD_REQUEST
-
-        from .models import Cart
-        try:
-            cart_obj = Cart.objects.get(id=cart_id, active=True)
-        except Cart.DoesNotExist:
-            return None, None, status.HTTP_404_NOT_FOUND
-
-        return data, cart_obj, status.HTTP_200_OK
-
-    def create_token(self, data):
-        """
-        Creates a signed JWT with cart_id
-        """
-        token = jwt.encode(data, settings.SECRET_KEY, algorithm="HS256")
-        self.token = token
-        return token
 
 
 class CartAPIView(viewsets.ModelViewSet):
-    queryset = Cart.objects.all()
+    queryset = Cart.objects.all()  
     serializer_class = CartSerializer
     permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        if not user or not user.is_authenticated:
+            return Cart.objects.none()
+        return Cart.objects.filter(user=user)
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+    def perform_update(self, serializer):
+        serializer.save(user=self.request.user)
