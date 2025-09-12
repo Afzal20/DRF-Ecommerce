@@ -3,8 +3,6 @@ __pycache__/
 *.py[cod]
 *$py.class
 
-.cursorignore
-.cursorindexingignore
 db.sqlite3
 *.sqlite3
 .venv/
@@ -13,3 +11,5 @@ db.sqlite3
 downloaded_images/
 products/
 media/
+staticfiles/
+data.json

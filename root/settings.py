@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
 from datetime import timedelta
+from django.utils.translation import gettext_lazy as _
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-y$s6a%5lk!!0^y6iew4v#l4wpl%q3)*5!&48d^$+zlckz&159p'
@@ -9,6 +10,8 @@ DEBUG = True
 ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
 INSTALLED_APPS = [
+    "admin_interface",
+    "colorfield",
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -26,6 +29,17 @@ INSTALLED_APPS = [
     'shop',
 ]
 
+X_FRAME_OPTIONS = "SAMEORIGIN"
+SILENCED_SYSTEM_CHECKS = ["security.W019"]
+
+LANGUAGES = (
+    ("en", _("English")),
+    ("bn", _("Bengali")),
+    # more than one language is expected here
+)
+LANGUAGE_CODE = "en"
+USE_I18N = True
+
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware', # CORS must be first
     'django.middleware.security.SecurityMiddleware',
@@ -33,6 +47,7 @@ MIDDLEWARE = [
     # "django.middleware.cache.UpdateCacheMiddleware", # temporarily disabled
     "django.middleware.common.CommonMiddleware",
     # "django.middleware.cache.FetchFromCacheMiddleware", # temporarily disabled
+    "django.middleware.locale.LocaleMiddleware", # for translation
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
@@ -87,12 +102,22 @@ AUTH_PASSWORD_VALIDATORS = [
 
 
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
-LANGUAGE_CODE = 'en-us'
+# Default language
+LANGUAGE_CODE = "bn"   # or "en-us" if you want English by default
+
+# Timezone
 TIME_ZONE = 'Asia/Dhaka'
 
+# Internationalization
 USE_I18N = True
-
 USE_TZ = True
+
+# Path for global translations
+LOCALE_PATHS = [
+    BASE_DIR / "locale",
+]
+
+
 
 
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
@@ -102,6 +127,10 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+# Frontend Configuration
+FRONTEND_URL = 'http://localhost:3000'
+FRONTEND_BUILD_DIR = os.path.join(BASE_DIR, '..', 'NEXTJS-Ecommerce', '.next')
 
 
 # settings.py

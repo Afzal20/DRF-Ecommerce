@@ -1,0 +1,62 @@
+{% load i18n %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Language Switcher Test</title>
+</head>
+<body>
+    <h1>Language Switcher Test</h1>
+    
+    <p>Current language: {{ LANGUAGE_CODE }}</p>
+    
+    <form action="{% url 'set_language' %}" method="post">
+        {% csrf_token %}
+        <input name="next" type="hidden" value="{{ redirect_to }}" />
+        <select name="language" onchange="this.form.submit()">
+            {% get_current_language as LANGUAGE_CODE %}
+            {% get_available_languages as LANGUAGES %}
+            {% get_language_info_list for LANGUAGES as languages %}
+            {% for language in languages %}
+                <option value="{{ language.code }}"
+                    {% if language.code == LANGUAGE_CODE %} selected{% endif %}>
+                    {{ language.name_local }} ({{ language.code }})
+                </option>
+            {% endfor %}
+        </select>
+        <noscript>
+            <input type="submit" value="Set Language" />
+        </noscript>
+    </form>
+    
+    <h2>Manual Language Links</h2>
+    <p>These links demonstrate the correct usage:</p>
+    <ul>
+        <li>
+            <form action="{% url 'set_language' %}" method="post" style="display: inline;">
+                {% csrf_token %}
+                <input name="next" type="hidden" value="/" />
+                <input name="language" type="hidden" value="en" />
+                <button type="submit">Switch to English</button>
+            </form>
+        </li>
+        <li>
+            <form action="{% url 'set_language' %}" method="post" style="display: inline;">
+                {% csrf_token %}
+                <input name="next" type="hidden" value="/" />
+                <input name="language" type="hidden" value="bn" />
+                <button type="submit">Switch to Bengali</button>
+            </form>
+        </li>
+    </ul>
+    
+    <h2>Why direct navigation to /i18n/setlang/ doesn't work:</h2>
+    <ul>
+        <li>The <code>set_language</code> view only accepts POST requests</li>
+        <li>It requires a <code>language</code> parameter in the POST data</li>
+        <li>It requires a CSRF token for security</li>
+        <li>When accessed via GET or without proper data, it redirects to the home page</li>
+    </ul>
+</body>
+</html>
