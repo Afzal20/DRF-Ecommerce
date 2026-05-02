@@ -99,6 +99,7 @@ class SliderViewSet(viewsets.ModelViewSet):
 class BillingAddressViewSet(viewsets.ModelViewSet):
     queryset = BillingAddress.objects.all()
     serializer_class = BillingAddressSerializer
+    lookup_value_regex = r"\d+"
 
 class PaymentViewSet(viewsets.ModelViewSet):
     queryset = Payment.objects.all()

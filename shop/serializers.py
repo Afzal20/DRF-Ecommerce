@@ -1,4 +1,7 @@
+import re
+
 from django.core.validators import RegexValidator
+from django.utils.html import strip_tags
 from rest_framework import serializers
 from .models import (
     ContactMessage, Districts, Category, HeroSection, ItemType, OrderItem, Size, Rating, Color,
@@ -7,6 +10,15 @@ from .models import (
 )
 
 class DistrictsSerializer(serializers.ModelSerializer):
+    def validate_title(self, value):
+        cleaned = strip_tags(value or "").strip()
+        cleaned = re.sub(r"[^\w\s\-'’]", "", cleaned)
+
+        if not cleaned:
+            raise serializers.ValidationError("Title contains invalid characters.")
+
+        return cleaned
+
     class Meta:
         model = Districts
         fields = ['id', 'title']
