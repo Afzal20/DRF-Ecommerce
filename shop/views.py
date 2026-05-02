@@ -1,40 +1,62 @@
+import mimetypes
+import os
+
+from django.conf import settings
+from django.http import Http404, HttpResponse
 from django.shortcuts import render
-from rest_framework import viewsets
-from rest_framework.response import Response
+from rest_framework import generics, status, viewsets
 from rest_framework.decorators import api_view
-from rest_framework import status
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.authentication import TokenAuthentication
-from rest_framework import status
+from rest_framework.generics import DestroyAPIView, ListAPIView
+from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
+from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.generics import ListAPIView, DestroyAPIView
-from .models import Cart, ContactMessage, HeroSection
-from .serializers import CartSerializer, AddToCartSerializer, ContactMessageSerializer, HeroSectionSerializer
-from rest_framework import generics
-from .serializers import ProductSerializer
-from rest_framework.permissions import IsAuthenticatedOrReadOnly
+
 from .models import (
-    Districts, Category, ItemType, Size, Rating, Color,
-    Item, ItemImage, ItemSize, ItemColor, Cart, Order,
-    Slider, BillingAddress, Payment, Coupon, Refund
+    BillingAddress,
+    Cart,
+    Category,
+    Color,
+    ContactMessage,
+    Coupon,
+    Districts,
+    HeroSection,
+    Item,
+    ItemColor,
+    ItemImage,
+    ItemSize,
+    ItemType,
+    Order,
+    OrderItem,
+    Payment,
+    Rating,
+    Refund,
+    Size,
+    Slider,
 )
 from .serializers import (
-    AddToCartSerializer, DistrictsSerializer, CategorySerializer, ItemTypeSerializer,
-    SizeSerializer, RatingSerializer, ColorSerializer, ItemSerializer,
-    ItemImageSerializer, ItemSizeSerializer, ItemColorSerializer, CartSerializer,
-    OrderSerializer, SliderSerializer, BillingAddressSerializer,
-    PaymentSerializer, CouponSerializer, RefundSerializer
+    AddToCartSerializer,
+    BillingAddressSerializer,
+    CartSerializer,
+    CategorySerializer,
+    ColorSerializer,
+    ContactMessageSerializer,
+    CouponSerializer,
+    DistrictsSerializer,
+    HeroSectionSerializer,
+    ItemColorSerializer,
+    ItemImageSerializer,
+    ItemSerializer,
+    ItemSizeSerializer,
+    ItemTypeSerializer,
+    OrderItemSerializer,
+    OrderSerializer,
+    PaymentSerializer,
+    ProductSerializer,
+    RatingSerializer,
+    RefundSerializer,
+    SizeSerializer,
+    SliderSerializer,
 )
-
-from rest_framework import generics, viewsets
-from .models import Order, OrderItem
-from .serializers import OrderSerializer, OrderItemSerializer
-from django.contrib.auth import get_user_model
-
-from django.http import HttpResponse, Http404
-import os
-import mimetypes
-from django.conf import settings
 
 # ModelViewSets for the basic CRUD operations
 
@@ -68,7 +90,7 @@ class ItemViewSet(viewsets.ModelViewSet):
     serializer_class = ItemSerializer
     lookup_field = 'product_id'  # Use product_id instead of the default 'id'
     
-    lookup_value_regex = '[\w-]+'
+    lookup_value_regex = r'[\w-]+'
 
 class ItemImageViewSet(viewsets.ModelViewSet):
     queryset = ItemImage.objects.all()
@@ -87,7 +109,7 @@ class OrderViewSet(viewsets.ModelViewSet):
     serializer_class = OrderSerializer
     queryset = Order.objects.all()  # <-- Add this line
 
-    def get_queryset(self):
+    def get_queryset(self):  # type: ignore[override]
         if self.request.user.is_authenticated:
             return Order.objects.filter(user=self.request.user)
         return Order.objects.none()
@@ -143,7 +165,7 @@ class CartListView(ListAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = CartSerializer
 
-    def get_queryset(self):
+    def get_queryset(self):  # type: ignore[override]
         if self.request.user.is_authenticated:
             return Cart.objects.filter(user_name=self.request.user, ordered=False)
         return Cart.objects.none()
@@ -151,7 +173,7 @@ class CartListView(ListAPIView):
 class RemoveFromCartView(DestroyAPIView):
     permission_classes = [IsAuthenticated]
 
-    def get_queryset(self):
+    def get_queryset(self):  # type: ignore[override]
         if self.request.user.is_authenticated:
             return Cart.objects.filter(user_name=self.request.user, ordered=False)
         return Cart.objects.none()
@@ -197,17 +219,14 @@ class ContactMessageCreateView(generics.CreateAPIView):
 
 class OrderItemViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
-    serializer_class = CartSerializer
-    
     queryset = OrderItem.objects.all()
     serializer_class = OrderItemSerializer
-    permission_classes = [IsAuthenticated]
 
 class UserOrderList(viewsets.ReadOnlyModelViewSet):
     serializer_class = OrderSerializer
     permission_classes = [IsAuthenticated]
 
-    def get_queryset(self):
+    def get_queryset(self):  # type: ignore[override]
         if self.request.user.is_authenticated:
             return Order.objects.filter(user=self.request.user)
         return Order.objects.none()
@@ -231,7 +250,7 @@ class HeroSectionViewSet(viewsets.ModelViewSet):
     serializer_class = HeroSectionSerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
 
-    def get_queryset(self):
+    def get_queryset(self):  # type: ignore[override]
         return HeroSection.objects.all()
 
 def index(request):
