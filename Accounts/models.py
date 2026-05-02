@@ -7,7 +7,9 @@ from django.conf import settings
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.utils import timezone
-import random
+import secrets
+
+
 class CustomUserManager(BaseUserManager):
 
     def create_user(self, email, password, **extra_fields):
@@ -48,7 +50,7 @@ class CustomUserModel(AbstractUser, PermissionsMixin):
     objects = CustomUserManager()
 
     def generate_otp(self):
-        self.OTP = str(random.randint(100000, 999999))
+        self.OTP = str(secrets.randbelow(900000) + 100000)
         self.OTP_expiry = timezone.now() + timedelta(minutes=5)
         self.is_OTP_varified = False
         self.save()

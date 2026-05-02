@@ -1,0 +1,101 @@
+# Codex Project Notes
+
+This repository is a Django REST Framework ecommerce backend. Use these notes
+as the first project context before changing code.
+
+## Stack
+
+- Django + Django REST Framework
+- SimpleJWT for JWT tokens
+- SQLite by default: `db.sqlite3`
+- `django-cors-headers` for frontend CORS
+- `drf_yasg` for Swagger docs at `/docs/`
+- WhiteNoise for static files in production-style runs
+
+## Project Layout
+
+- `root/settings.py`: Django settings, environment loading, auth, CORS, static/media.
+- `root/urls.py`: main URL routing for admin, docs, accounts, and shop.
+- `root/middleware.py`: custom security headers middleware.
+- `Accounts/`: custom user app, auth endpoints, profile, password reset, JWT helpers.
+- `shop/`: catalog, cart, orders, admin registrations, serializers, viewsets.
+- `templates/admin/base.html`: admin theme override.
+- `shop/management/commands/`: seed commands for categories and ratings.
+
+## Important Behavior
+
+- The custom user model is `Accounts.CustomUserModel`.
+- Users log in with `email`; there is no `username` field on the user model.
+- DRF defaults to authenticated access in `REST_FRAMEWORK`.
+- JWT cookie auth reads an `access_token` cookie in
+  `Accounts/authentication.py`.
+- `UserLoginView` currently returns access and refresh tokens in the JSON
+  response. The cookie-setting code is present but commented out.
+- Product API lookup uses `product_id` for the `ItemViewSet`.
+- Orders are filtered to the authenticated user in `OrderViewSet`.
+- Cart rows are unique by user, item, ordered flag, size, and color code.
+
+## Common Commands
+
+Run these from the repository root:
+
+```bash
+python manage.py check
+python manage.py migrate
+python manage.py runserver
+python manage.py createsuperuser
+python manage.py populate_categories
+python manage.py populate_ratings
+```
+
+When `DJANGO_DEBUG=False`, run this before using the admin or serving static
+files:
+
+```bash
+python manage.py collectstatic --noinput
+```
+
+If `collectstatic` has not been run with `DEBUG=False`, Django admin can fail
+with `Missing staticfiles manifest entry`, usually for files like
+`admin/css/base.css`.
+
+## Environment
+
+Settings are loaded from `.env` with `python-dotenv`.
+
+Useful variables:
+
+- `DJANGO_SECRET_KEY`
+- `DJANGO_DEBUG`
+- `DJANGO_ALLOWED_HOSTS`
+- `EMAIL_HOST`
+- `EMAIL_HOST_USER`
+- `EMAIL_HOST_PASSWORD`
+- `EMAIL_PORT`
+- `EMAIL_USE_TLS`
+
+Never commit real secrets, email passwords, `db.sqlite3`, `.env`, or generated
+`staticfiles/`.
+
+## API Areas
+
+- Admin: `/admin/`
+- Swagger docs: `/docs/`
+- Accounts routes: `/accounts/`
+- Shop routes: `/shop/`
+- Cart routes include `/shop/cart/`, `/shop/cart/add/`,
+  `/shop/cart/remove/<pk>/`, and `/shop/cart/update/<pk>/`.
+- Product routes include router endpoints under `/shop/items/` plus
+  `/shop/items/<product_id>/` and `/shop/product/<id>/`.
+
+## Change Guidelines
+
+- Follow the existing Django app structure; keep changes small and local.
+- If models change, create migrations and verify with `python manage.py check`.
+- Prefer serializer validation for API input validation.
+- Keep admin fixes in `admin.py` or `templates/admin/` unless settings are the
+  real cause.
+- Be careful with auth changes because the project mixes session auth, JWT
+  response tokens, and cookie-based JWT auth.
+- Do not replace existing data files or migrations unless the task explicitly
+  asks for that.
