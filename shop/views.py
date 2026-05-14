@@ -19,16 +19,26 @@ from .serializers import (
 class ItemViews(generics.ListAPIView):
     permission_classes = [AllowAny]
     serializer_class = ItemSerilizers
-    queryset = Item.objects.select_related(
-        "ratings",
-        "category",
-        "type",
-    ).prefetch_related(
-        "images",
-        "item_size__size",
-        "item_color__color",
-    )
 
+    def get_queryset(self):
+        queryset = Item.objects.select_related(
+            "ratings",
+            "category",
+            "type",
+        ).prefetch_related(
+            "images",
+            "item_size__size",
+            "item_color__color",
+        )
+
+        limit = self.request.query_params.get('limit', None)
+        if limit is not None:
+            try:
+                queryset = queryset[:int(limit)]
+            except (ValueError, TypeError):
+                pass
+
+        return queryset
 
 class ItemDetailViews(generics.RetrieveAPIView):
     permission_classes = [AllowAny]
