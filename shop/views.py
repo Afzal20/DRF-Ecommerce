@@ -1,257 +1,166 @@
-import mimetypes
-import os
 
-from django.conf import settings
-from django.http import Http404, HttpResponse
-from django.shortcuts import render
-from rest_framework import generics, status, viewsets
-from rest_framework.decorators import api_view
-from rest_framework.generics import DestroyAPIView, ListAPIView
-from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
-from rest_framework.response import Response
-from rest_framework.views import APIView
-
-from .models import (
-    BillingAddress,
-    Cart,
-    Category,
-    Color,
-    ContactMessage,
-    Coupon,
-    Districts,
-    HeroSection,
-    Item,
-    ItemColor,
-    ItemImage,
-    ItemSize,
-    ItemType,
-    Order,
-    OrderItem,
-    Payment,
-    Rating,
-    Refund,
-    Size,
-    Slider,
+from rest_framework import generics
+from rest_framework.permissions import AllowAny, IsAdminUser, IsAuthenticated
+from .models import ( BillingAddress, Cart, Category, Color, 
+                     ContactMessage, Coupon, Districts, HeroSection, 
+                     Item, ItemColor, ItemImage, ItemSize, ItemType, Order, 
+                     OrderItem, Payment, Rating, Refund, Size, Slider,
 )
+
 from .serializers import (
-    AddToCartSerializer,
-    BillingAddressSerializer,
-    CartSerializer,
-    CategorySerializer,
-    ColorSerializer,
-    ContactMessageSerializer,
-    CouponSerializer,
-    DistrictsSerializer,
-    HeroSectionSerializer,
-    ItemColorSerializer,
-    ItemImageSerializer,
-    ItemSerializer,
-    ItemSizeSerializer,
-    ItemTypeSerializer,
-    OrderItemSerializer,
-    OrderSerializer,
-    PaymentSerializer,
-    ProductSerializer,
-    RatingSerializer,
-    RefundSerializer,
-    SizeSerializer,
-    SliderSerializer,
+    ItemSerilizers, ItemImageSerilizers, ItemSizeSerilizers, ItemColorSerilizers,
+    CategorySerilizers, ItemTypeSerilizers, HeroSectionSerilizers, 
+    DistrictsSerilizers, ContactMessageSerilizers, SliderSerilizers,
+    BillingAddressSerilizers, PaymentSerilizers, CouponSerilizers, RefundSerilizers,
+    CartSerilizers, OrderSerilizers, OrderItemSerilizers, RatingSerilizers, 
+    SizeSerilizers, ColorSerilizers
 )
 
-# ModelViewSets for the basic CRUD operations
-
-class DistrictsViewSet(viewsets.ModelViewSet):
-    queryset = Districts.objects.all()
-    serializer_class = DistrictsSerializer
-
-class CategoryViewSet(viewsets.ModelViewSet):
-    queryset = Category.objects.all()
-    serializer_class = CategorySerializer
-
-class ItemTypeViewSet(viewsets.ModelViewSet):
-    queryset = ItemType.objects.all()
-    serializer_class = ItemTypeSerializer
-
-class SizeViewSet(viewsets.ModelViewSet):
-    queryset = Size.objects.all()
-    serializer_class = SizeSerializer
-
-class RatingViewSet(viewsets.ModelViewSet):
-    queryset = Rating.objects.all()
-    serializer_class = RatingSerializer
-
-class ColorViewSet(viewsets.ModelViewSet):
-    queryset = Color.objects.all()
-    serializer_class = ColorSerializer
+class ItemViews(generics.ListAPIView):
+    permission_classes = [AllowAny]
+    serializer_class = ItemSerilizers
+    queryset = Item.objects.select_related(
+        "ratings",
+        "category",
+        "type",
+    ).prefetch_related(
+        "images",
+        "item_size__size",
+        "item_color__color",
+    )
 
 
-class ItemViewSet(viewsets.ModelViewSet):
-    queryset = Item.objects.all()
-    serializer_class = ItemSerializer
-    lookup_field = 'product_id'  # Use product_id instead of the default 'id'
-    
-    lookup_value_regex = r'[\w-]+'
+class ItemDetailViews(generics.RetrieveAPIView):
+    permission_classes = [AllowAny]
+    serializer_class = ItemSerilizers
+    queryset = Item.objects.select_related(
+        "ratings",
+        "category",
+        "type",
+    ).prefetch_related(
+        "images",
+        "item_size__size",
+        "item_color__color",
+    )
 
-class ItemImageViewSet(viewsets.ModelViewSet):
+class ItemImageViews(generics.ListAPIView):
+    permission_classes = [AllowAny]
+    serializer_class = ItemImageSerilizers
     queryset = ItemImage.objects.all()
-    serializer_class = ItemImageSerializer
-
-class ItemSizeViewSet(viewsets.ModelViewSet):
+    
+class ItemSizeViews(generics.ListAPIView):
+    permission_classes = [AllowAny]
+    serializer_class = ItemSizeSerilizers
     queryset = ItemSize.objects.all()
-    serializer_class = ItemSizeSerializer
-
-class ItemColorViewSet(viewsets.ModelViewSet):
+    
+class ItemColorViews(generics.ListAPIView):
+    permission_classes = [AllowAny]
+    serializer_class = ItemColorSerilizers
     queryset = ItemColor.objects.all()
-    serializer_class = ItemColorSerializer 
-
-class OrderViewSet(viewsets.ModelViewSet):
-    permission_classes = [IsAuthenticated]
-    serializer_class = OrderSerializer
-    queryset = Order.objects.all()  # <-- Add this line
-
-    def get_queryset(self):  # type: ignore[override]
-        if self.request.user.is_authenticated:
-            return Order.objects.filter(user=self.request.user)
-        return Order.objects.none()
-
-class SliderViewSet(viewsets.ModelViewSet):
-    queryset = Slider.objects.all()
-    serializer_class = SliderSerializer
-
-class BillingAddressViewSet(viewsets.ModelViewSet):
-    queryset = BillingAddress.objects.all()
-    serializer_class = BillingAddressSerializer
-    lookup_value_regex = r"\d+"
-
-class PaymentViewSet(viewsets.ModelViewSet):
-    queryset = Payment.objects.all()
-    serializer_class = PaymentSerializer
-
-class CouponViewSet(viewsets.ModelViewSet):
-    queryset = Coupon.objects.all()
-    serializer_class = CouponSerializer
-
-class RefundViewSet(viewsets.ModelViewSet):
-    queryset = Refund.objects.all()
-    serializer_class = RefundSerializer
-
-@api_view(['GET'])
-def get_item_by_product_id(request, product_id):
-    try:
-        # Fetch the item by product_id
-        item = Item.objects.prefetch_related('images', 'item_size__size', 'item_color__color').filter(product_id=product_id).first()
-
-        if item:
-            # Serialize the item using the ItemSerializer
-            serializer = ItemSerializer(item)
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        else:
-            return Response({"error": "Item not found"}, status=status.HTTP_404_NOT_FOUND)
-
-    except Exception as e:
-        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-class AddToCartView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def post(self, request, *args, **kwargs):
-        serializer = AddToCartSerializer(data=request.data, context={'request': request})
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-class CartListView(ListAPIView):
-    permission_classes = [IsAuthenticated]
-    serializer_class = CartSerializer
-
-    def get_queryset(self):  # type: ignore[override]
-        if self.request.user.is_authenticated:
-            return Cart.objects.filter(user_name=self.request.user, ordered=False)
-        return Cart.objects.none()
-
-class RemoveFromCartView(DestroyAPIView):
-    permission_classes = [IsAuthenticated]
-
-    def get_queryset(self):  # type: ignore[override]
-        if self.request.user.is_authenticated:
-            return Cart.objects.filter(user_name=self.request.user, ordered=False)
-        return Cart.objects.none()
-
-class ProductDetailView(generics.RetrieveAPIView):
-    queryset = Item.objects.all()
-    serializer_class = ProductSerializer
-    lookup_field = 'id' 
     
-    def get(self, request, *args, **kwargs):
-        product = self.get_object()
-        serializer = self.get_serializer(product)
-        return Response(serializer.data)
-
-
-class UpdateCartQuantityView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def patch(self, request, pk, *args, **kwargs):
-        try:
-            cart_item = Cart.objects.get(pk=pk, user_name=request.user, ordered=False)
-        except Cart.DoesNotExist:
-            return Response({"error": "Item not found in cart"}, status=status.HTTP_404_NOT_FOUND)
-
-        quantity = request.data.get('quantity', None)
-        if quantity is not None and int(quantity) > 0:
-            cart_item.quantity = int(quantity)
-            cart_item.save()
-            return Response({"message": "Cart updated successfully"}, status=status.HTTP_200_OK)
-        return Response({"error": "Invalid quantity"}, status=status.HTTP_400_BAD_REQUEST)
-
-
-class ContactMessageCreateView(generics.CreateAPIView):
-    queryset = ContactMessage.objects.all()
-    serializer_class = ContactMessageSerializer
-
-    def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response({"message": "Message sent successfully!"}, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-class OrderItemViewSet(viewsets.ModelViewSet):
-    permission_classes = [IsAuthenticated]
-    queryset = OrderItem.objects.all()
-    serializer_class = OrderItemSerializer
-
-class UserOrderList(viewsets.ReadOnlyModelViewSet):
-    serializer_class = OrderSerializer
-    permission_classes = [IsAuthenticated]
-
-    def get_queryset(self):  # type: ignore[override]
-        if self.request.user.is_authenticated:
-            return Order.objects.filter(user=self.request.user)
-        return Order.objects.none()
+class CategoryViews(generics.ListAPIView):
+    permission_classes = [AllowAny]
+    serializer_class = CategorySerilizers
+    queryset = Category.objects.all()
     
-
-def serve_media(request, path):
-    media_path = os.path.join(settings.MEDIA_ROOT, path)
-
-    if os.path.exists(media_path):
-        with open(media_path, 'rb') as f:
-            mime_type, _ = mimetypes.guess_type(media_path)
-            response = HttpResponse(f.read(), content_type=mime_type or 'application/octet-stream')
-            response["Content-Disposition"] = f'inline; filename="{os.path.basename(media_path)}"'
-            return response
-    else:
-        raise Http404("Media file not found")
-
-
-class HeroSectionViewSet(viewsets.ModelViewSet):
+class ItemTypeViews(generics.ListAPIView):
+    permission_classes = [AllowAny]
+    serializer_class = ItemTypeSerilizers
+    queryset = ItemType.objects.all()
+    
+class HeroSectionViews(generics.ListAPIView):
+    permission_classes = [AllowAny]
+    serializer_class = HeroSectionSerilizers
     queryset = HeroSection.objects.all()
-    serializer_class = HeroSectionSerializer
-    permission_classes = [IsAuthenticatedOrReadOnly]
+    
+class DistrictsViews(generics.ListAPIView):
+    permission_classes = [AllowAny]
+    serializer_class = DistrictsSerilizers
+    queryset = Districts.objects.all()
+    
+class ContactMessageViews(generics.CreateAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = ContactMessageSerilizers
+    queryset = ContactMessage.objects.all()
+    
+    
+class SliderViews(generics.ListAPIView):
+    permission_classes = [AllowAny]
+    serializer_class = SliderSerilizers
+    queryset = Slider.objects.all()
+    
+class BillingAddressViews(generics.CreateAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = BillingAddressSerilizers
+    queryset = BillingAddress.objects.all()
 
-    def get_queryset(self):  # type: ignore[override]
-        return HeroSection.objects.all()
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+    
+class PaymentViews(generics.CreateAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = PaymentSerilizers
+    queryset = Payment.objects.all()
 
-def index(request):
-    return render(request, 'index.html')
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+    
+class CouponViews(generics.CreateAPIView):
+    permission_classes = [IsAdminUser]
+    serializer_class = CouponSerilizers
+    queryset = Coupon.objects.all()
+
+
+class RefundViews(generics.CreateAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = RefundSerilizers
+    queryset = Refund.objects.all()
+
+
+class RatingViews(generics.ListAPIView):
+    permission_classes = [AllowAny]
+    serializer_class = RatingSerilizers
+    queryset = Rating.objects.all()
+
+
+class SizeViews(generics.ListAPIView):
+    permission_classes = [AllowAny]
+    serializer_class = SizeSerilizers
+    queryset = Size.objects.all()
+
+
+class ColorViews(generics.ListAPIView):
+    permission_classes = [AllowAny]
+    serializer_class = ColorSerilizers
+    queryset = Color.objects.all()
+
+
+class CartViews(generics.ListCreateAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = CartSerilizers
+    queryset = Cart.objects.all()
+
+    def get_queryset(self):
+        return Cart.objects.filter(user_name=self.request.user)
+
+    def perform_create(self, serializer):
+        serializer.save(user_name=self.request.user)
+
+
+class OrderViews(generics.ListCreateAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = OrderSerilizers
+    queryset = Order.objects.all()
+
+    def get_queryset(self):
+        return Order.objects.filter(user=self.request.user)
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+
+class OrderItemViews(generics.CreateAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = OrderItemSerilizers
+    queryset = OrderItem.objects.all()
+    

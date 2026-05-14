@@ -1,46 +1,49 @@
-from django.urls import path, include
-from rest_framework.routers import DefaultRouter
+from django.urls import path
 
 from .views import (
-    AddToCartView, CartListView, ContactMessageCreateView, DistrictsViewSet, CategoryViewSet, HeroSectionViewSet, 
-    ItemTypeViewSet, ProductDetailView, RemoveFromCartView,SizeViewSet, RatingViewSet, 
-    ColorViewSet, ItemViewSet, ItemImageViewSet,ItemSizeViewSet, ItemColorViewSet, OrderViewSet, 
-    SliderViewSet, BillingAddressViewSet, PaymentViewSet, CouponViewSet, RefundViewSet, 
-    UpdateCartQuantityView, get_item_by_product_id, OrderViewSet, OrderItemViewSet, UserOrderList
-)
+    BillingAddressViews,
+    CartViews,
+    CategoryViews,
+    ColorViews,
+    ContactMessageViews,
+    CouponViews,
+    DistrictsViews,
+    HeroSectionViews,
+    ItemDetailViews,
+    ItemColorViews,
+    ItemImageViews,
+    ItemSizeViews,
+    ItemTypeViews,
+    ItemViews,
+    OrderItemViews,
+    OrderViews,
+    PaymentViews,
+    RatingViews,
+    RefundViews,
+    SizeViews,
+    SliderViews,
+) 
 
-router = DefaultRouter()
-router.register(r'districts', DistrictsViewSet)
-router.register(r'categories', CategoryViewSet)
-router.register(r'item-types', ItemTypeViewSet)
-router.register(r'sizes', SizeViewSet)
-router.register(r'ratings', RatingViewSet)
-router.register(r'colors', ColorViewSet)
-router.register(r'items', ItemViewSet)
-router.register(r'item-images', ItemImageViewSet)
-router.register(r'item-sizes', ItemSizeViewSet)
-router.register(r'item-colors', ItemColorViewSet)
-router.register(r'orders', OrderViewSet)
-router.register(r'sliders', SliderViewSet)
-router.register(r'billing-addresses', BillingAddressViewSet)
-router.register(r'payments', PaymentViewSet)
-router.register(r'coupons', CouponViewSet)
-router.register(r'refunds', RefundViewSet)
-router.register(r'order-items', OrderItemViewSet)
-router.register(r'hero-sections', HeroSectionViewSet) 
-
-# Custom route for fetching a single product by product_id
 urlpatterns = [
-    path('', include(router.urls)),
-    
-    path('items/<str:product_id>/', get_item_by_product_id, name='item-by-product-id'),
-    # path('user-orders/', UserOrderList.as_view(), name='user-order-list'),
-
-    path('cart/', CartListView.as_view(), name='cart-list'),
-    path('cart/add/', AddToCartView.as_view(), name='add-to-cart'),
-    path('cart/remove/<int:pk>/', RemoveFromCartView.as_view(), name='remove-from-cart'),
-    path('product/<int:id>/', ProductDetailView.as_view(), name='product-detail'),  
-    path('cart/update/<int:pk>/', UpdateCartQuantityView.as_view(), name='update-cart'),
-    
-    path('contact/', ContactMessageCreateView.as_view(), name='contact-message'),
+    path('items/', ItemViews.as_view(), name='items'),
+    path('items/<int:pk>/', ItemDetailViews.as_view(), name='item-detail'),
+    path('districts/', DistrictsViews.as_view(), name='districts'),
+    path('categories/', CategoryViews.as_view(), name='categories'),
+    path('item-types/', ItemTypeViews.as_view(), name='item-types'),
+    path('sizes/', SizeViews.as_view(), name='sizes'),
+    path('ratings/', RatingViews.as_view(), name='ratings'),
+    path('colors/', ColorViews.as_view(), name='colors'),
+    path('item-images/', ItemImageViews.as_view(), name='item-images'),
+    path('item-sizes/', ItemSizeViews.as_view(), name='item-sizes'),
+    path('item-colors/', ItemColorViews.as_view(), name='item-colors'),
+    path('sliders/', SliderViews.as_view(), name='sliders'),
+    path('hero-sections/', HeroSectionViews.as_view(), name='hero-sections'),
+    path('billing-addresses/', BillingAddressViews.as_view(), name='billing-addresses'),
+    path('payments/', PaymentViews.as_view(), name='payments'),
+    path('coupons/', CouponViews.as_view(), name='coupons'),
+    path('refunds/', RefundViews.as_view(), name='refunds'),
+    path('carts/', CartViews.as_view(), name='carts'),
+    path('contacts/', ContactMessageViews.as_view(), name='contacts'),
+    path('orders/', OrderViews.as_view(), name='orders'),
+    path('order-items/', OrderItemViews.as_view(), name='order-items'),
 ]

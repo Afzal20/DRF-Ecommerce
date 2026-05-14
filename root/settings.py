@@ -73,8 +73,19 @@ DATABASES = {
     }
 }
 
-
-# https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.mysql',
+#         'NAME': 'ecommerce_db',          
+#         'USER': 'afzal',           
+#         'PASSWORD': 'password',           
+#         'HOST': 'localhost',                   
+#         'PORT': '3306', # mariadb default port               
+#         'OPTIONS': {
+#             'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+#         },
+#     }
+# }
 
 AUTH_PASSWORD_VALIDATORS = [
     {

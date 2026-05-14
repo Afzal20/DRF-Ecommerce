@@ -1,4 +1,0 @@
-[bandit]
-targets = .
-recursive = true
-exclude = ./.venv,./venv,./env,./.git,./__pycache__,./staticfiles,./media
