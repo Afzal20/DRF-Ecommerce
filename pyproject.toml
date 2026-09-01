@@ -41,3 +41,15 @@ dependencies = [
     "uv>=0.12.8",
     "whitenoise>=6.12.0",
 ]
+
+[dependency-groups]
+dev = [
+    "black>=26.5.1",
+    "factory-boy>=3.3.3",
+    "isort>=9.0.1",
+    "pre-commit>=4.6.2",
+    "pytest>=9.1.1",
+    "pytest-cov>=7.1.0",
+    "pytest-django>=4.14.0",
+    "ruff>=0.16.5",
+]
