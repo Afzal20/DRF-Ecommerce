@@ -30,6 +30,7 @@ class UserRegistrationView(generics.CreateAPIView):
 
     serializer_class = UserRegistratioinSerializer
     permission_classes = [permissions.AllowAny]
+    throttle_scope = "auth"
 
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -52,6 +53,7 @@ class UserRegistrationView(generics.CreateAPIView):
 @method_decorator(csrf_exempt, name="dispatch")
 class UserLoginView(APIView):
     permission_classes = [permissions.AllowAny]
+    throttle_scope = "auth"
 
     @swagger_auto_schema(
         request_body=UserLoginSerializer,
@@ -292,6 +294,7 @@ class ChangePasswordAPIView(generics.GenericAPIView):
 class ResetPasswordRequestAPIView(generics.GenericAPIView):
     serializer_class = ResetPasswordRequestSerializer
     permission_classes = [permissions.AllowAny]
+    throttle_scope = "otp"
 
     def post(self, request, *args, **kwargs):
         serializer = ResetPasswordRequestSerializer(data=request.data)
@@ -313,6 +316,7 @@ class ResetPasswordRequestAPIView(generics.GenericAPIView):
 class OtpVerificationAPIView(generics.GenericAPIView):
     serializer_class = OtpVarificationSerializer
     permission_classes = [permissions.AllowAny]
+    throttle_scope = "otp"
 
     def post(self, request, *args, **kwargs):
         serializer = OtpVarificationSerializer(data=request.data)

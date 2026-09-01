@@ -42,3 +42,4 @@
 - Created Architecture Decision Records (ADRs) directory and first five ADRs (Phase 0 Step 6)
 - Enforced JWT rotation and blacklist, shortened token lifetimes (Phase 1 Step 7)
 - Hashed OTP storage with constant-time verification and enforced single-use (Phase 1 Step 8)
+- Added scoped rate throttling for auth, OTP, and anonymous browsing (Phase 1 Step 9)
