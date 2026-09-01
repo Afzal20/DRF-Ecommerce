@@ -38,3 +38,4 @@
 - Added pre-commit (ruff, black, isort) and fixed lint baseline (Phase 0 Step 2)
 - Introduced pytest + factory_boy scaffolding with first smoke tests (Phase 0 Step 3)
 - Added GitHub Actions CI pipeline with linting, testing, and pip-audit (Phase 0 Step 4)
+- Hardened DEBUG and removed insecure SECRET_KEY fallback (Phase 0 Step 5)

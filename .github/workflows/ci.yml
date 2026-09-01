@@ -29,6 +29,8 @@ jobs:
         uv run pre-commit run --all-files
 
     - name: Run tests with pytest
+      env:
+        DJANGO_SECRET_KEY: django-insecure-test-key
       run: |
         uv run pytest --cov-fail-under=50
 

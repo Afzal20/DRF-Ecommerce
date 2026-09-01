@@ -16,3 +16,4 @@ media/
 
 # Internal planning documents
 TRANSFORMATION_PLAN.md
+.env
