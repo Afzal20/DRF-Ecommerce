@@ -39,3 +39,4 @@
 - Introduced pytest + factory_boy scaffolding with first smoke tests (Phase 0 Step 3)
 - Added GitHub Actions CI pipeline with linting, testing, and pip-audit (Phase 0 Step 4)
 - Hardened DEBUG and removed insecure SECRET_KEY fallback (Phase 0 Step 5)
+- Created Architecture Decision Records (ADRs) directory and first five ADRs (Phase 0 Step 6)
