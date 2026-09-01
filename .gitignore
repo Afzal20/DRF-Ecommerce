@@ -15,4 +15,5 @@ media/
 
 # Internal planning documents
 TRANSFORMATION_PLAN.md
+NEXTJS_UI_PLAN.md
 .env
