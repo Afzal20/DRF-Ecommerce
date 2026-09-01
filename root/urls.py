@@ -22,15 +22,16 @@ schema_view = get_schema_view(
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    # re_path(r'docs/$', schema_view.with_ui('swagger', cache_timeout=0), name='docs'),
-    re_path(
-        r"^docs/$",
-        csrf_exempt(schema_view.with_ui("swagger", cache_timeout=0)),
-        name="docs",
-    ),
     path("accounts/", include("Accounts.urls"), name="account_uers"),
     path("shop/", include("shop.urls"), name="shop_urls"),
 ]
 
 if settings.DEBUG:
+    urlpatterns += [
+        re_path(
+            r"^docs/$",
+            csrf_exempt(schema_view.with_ui("swagger", cache_timeout=0)),
+            name="docs",
+        )
+    ]
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

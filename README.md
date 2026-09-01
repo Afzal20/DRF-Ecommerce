@@ -43,3 +43,4 @@
 - Enforced JWT rotation and blacklist, shortened token lifetimes (Phase 1 Step 7)
 - Hashed OTP storage with constant-time verification and enforced single-use (Phase 1 Step 8)
 - Added scoped rate throttling for auth, OTP, and anonymous browsing (Phase 1 Step 9)
+- Hardened production settings: HSTS, SSL redirect, secure cookies, and Swagger guard (Phase 1 Step 10)
