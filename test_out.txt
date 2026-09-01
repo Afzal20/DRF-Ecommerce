@@ -1,0 +1,111 @@
+============================= test session starts ==============================
+platform linux -- Python 3.12.13, pytest-9.1.1, pluggy-1.6.0
+django: version: 6.1, settings: root.settings (from ini)
+rootdir: /home/dev-dir/DRF-Ecommerce
+configfile: pytest.ini
+plugins: django-4.14.0, cov-7.1.0, Faker-40.37.0
+collected 1 item
+
+Accounts/tests.py F                                                      [100%]
+
+=================================== FAILURES ===================================
+_________________ test_api_client_can_reach_register_endpoint __________________
+
+api_client = <rest_framework.test.APIClient object at 0x7fe17866fd40>
+
+    @pytest.mark.django_db
+    def test_api_client_can_reach_register_endpoint(api_client):
+        url = reverse("user_register")
+        response = api_client.post(url, data={})
+        # just checking the endpoint exists and returns a validation error (400) or similar
+>       assert response.status_code in [400, 422]
+E       assert 301 in [400, 422]
+E        +  where 301 = <HttpResponsePermanentRedirect status_code=301, "text/html; charset=utf-8", url="https://testserver/accounts/user/register/">.status_code
+
+Accounts/tests.py:19: AssertionError
+=============================== warnings summary ===============================
+.venv/lib/python3.12/site-packages/pytest_django/plugin.py:394
+  /home/dev-dir/DRF-Ecommerce/.venv/lib/python3.12/site-packages/pytest_django/plugin.py:394: RemovedInDjango70Warning: The EMAIL_HOST_PASSWORD setting is deprecated. Migrate to MAILERS before Django 7.0.
+    dj_settings.DATABASES  # noqa: B018
+
+.venv/lib/python3.12/site-packages/pytest_django/plugin.py:394
+  /home/dev-dir/DRF-Ecommerce/.venv/lib/python3.12/site-packages/pytest_django/plugin.py:394: RemovedInDjango70Warning: The EMAIL_USE_TLS setting is deprecated. Migrate to MAILERS before Django 7.0.
+    dj_settings.DATABASES  # noqa: B018
+
+.venv/lib/python3.12/site-packages/pytest_django/plugin.py:394
+  /home/dev-dir/DRF-Ecommerce/.venv/lib/python3.12/site-packages/pytest_django/plugin.py:394: RemovedInDjango70Warning: The EMAIL_HOST setting is deprecated. Migrate to MAILERS before Django 7.0.
+    dj_settings.DATABASES  # noqa: B018
+
+.venv/lib/python3.12/site-packages/pytest_django/plugin.py:394
+  /home/dev-dir/DRF-Ecommerce/.venv/lib/python3.12/site-packages/pytest_django/plugin.py:394: RemovedInDjango70Warning: The EMAIL_BACKEND setting is deprecated. Migrate to MAILERS before Django 7.0.
+    dj_settings.DATABASES  # noqa: B018
+
+.venv/lib/python3.12/site-packages/pytest_django/plugin.py:394
+  /home/dev-dir/DRF-Ecommerce/.venv/lib/python3.12/site-packages/pytest_django/plugin.py:394: RemovedInDjango70Warning: The EMAIL_HOST_USER setting is deprecated. Migrate to MAILERS before Django 7.0.
+    dj_settings.DATABASES  # noqa: B018
+
+.venv/lib/python3.12/site-packages/pytest_django/plugin.py:394
+  /home/dev-dir/DRF-Ecommerce/.venv/lib/python3.12/site-packages/pytest_django/plugin.py:394: RemovedInDjango70Warning: The EMAIL_PORT setting is deprecated. Migrate to MAILERS before Django 7.0.
+    dj_settings.DATABASES  # noqa: B018
+
+Accounts/tests.py::test_api_client_can_reach_register_endpoint
+  /home/dev-dir/DRF-Ecommerce/.venv/lib/python3.12/site-packages/drf_yasg/views.py:100: DeprecationWarning: SwaggerJSONRenderer & SwaggerYAMLRenderer's `format` has changed to not include a `.` prefix, please silence this warning by setting `SWAGGER_USE_COMPAT_RENDERERS = False` in your Django settings and ensure your application works (check your URLCONF and swagger/redoc URLs).
+    warnings.warn(
+
+Accounts/tests.py::test_api_client_can_reach_register_endpoint
+  /home/dev-dir/DRF-Ecommerce/.venv/lib/python3.12/site-packages/django/core/handlers/base.py:63: UserWarning: No directory at: /home/dev-dir/DRF-Ecommerce/staticfiles/
+    mw_instance = middleware(adapted_handler)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+================================ tests coverage ================================
+_______________ coverage: platform linux, python 3.12.13-final-0 _______________
+
+Name                                                                                  Stmts   Miss  Cover   Missing
+-------------------------------------------------------------------------------------------------------------------
+Accounts/__init__.py                                                                      0      0   100%
+Accounts/admin.py                                                                        36      5    86%   65, 71-77
+Accounts/apps.py                                                                          4      0   100%
+Accounts/authentication.py                                                               12      9    25%   6-18
+Accounts/factories.py                                                                    10      0   100%
+Accounts/migrations/0001_initial.py                                                       8      8     0%   3-17
+Accounts/migrations/0002_deleteaccuntslist_emailotp.py                                    6      6     0%   3-14
+Accounts/migrations/0003_alter_emailotp_expires_at.py                                     4      4     0%   3-12
+Accounts/migrations/0004_customusermodel_otp_customusermodel_otp_exp_and_more.py          4      4     0%   3-12
+Accounts/migrations/0005_remove_customusermodel_otp_and_more.py                           4      4     0%   3-12
+Accounts/migrations/0006_customusermodel_otp_customusermodel_otp_expiry_and_more.py       4      4     0%   3-12
+Accounts/migrations/0007_alter_customusermodel_otp.py                                     4      4     0%   3-12
+Accounts/migrations/__init__.py                                                           0      0   100%
+Accounts/models.py                                                                       78     31    60%   18-24, 27-40, 55-62, 65, 85, 89, 94-95, 100, 108
+Accounts/serializers.py                                                                 104     54    48%   22-27, 36-44, 65-68, 71-73, 83-99, 110-128, 139-147, 150-157, 169-176
+Accounts/tests.py                                                                        13      3    77%   9-11
+Accounts/urls.py                                                                          3      0   100%
+Accounts/views.py                                                                       140     81    42%   36-39, 79-121, 129, 133-135, 139-143, 154-225, 235-254, 266-273, 283-289, 300-310, 322-332, 343-351, 388-405, 414
+conftest.py                                                                               5      0   100%
+locustfile.py                                                                           206    206     0%   1-425
+manage.py                                                                                11     11     0%   3-22
+root/__init__.py                                                                          0      0   100%
+root/asgi.py                                                                              4      4     0%   10-16
+root/middleware.py                                                                        9      6    33%   9-31
+root/settings.py                                                                         55      1    98%   13
+root/urls.py                                                                             13      2    85%   30-37
+root/wsgi.py                                                                              4      4     0%   10-16
+shop/__init__.py                                                                          0      0   100%
+shop/admin.py                                                                            83      4    95%   64-69
+shop/apps.py                                                                              4      0   100%
+shop/management/__init__.py                                                               0      0   100%
+shop/management/commands/__init__.py                                                      0      0   100%
+shop/management/commands/import_products.py                                             118    118     0%   13-235
+shop/management/commands/populate_categories.py                                           9      9     0%   1-30
+shop/management/commands/populate_ratings.py                                              8      8     0%   1-13
+shop/migrations/0001_initial.py                                                           9      9     0%   3-18
+shop/migrations/__init__.py                                                               0      0   100%
+shop/models.py                                                                          162     23    86%   14, 21, 28, 35, 42, 50, 70, 73, 76, 84, 93, 101, 109, 120, 132, 140, 150, 176, 191, 222, 226, 243, 246
+shop/serializers.py                                                                      95      0   100%
+shop/tests.py                                                                             0      0   100%
+shop/urls.py                                                                              3      0   100%
+shop/views.py                                                                           108     14    87%   55-72, 149, 158, 197, 200, 209, 212
+-------------------------------------------------------------------------------------------------------------------
+TOTAL                                                                                  1340    636    53%
+=========================== short test summary info ============================
+FAILED Accounts/tests.py::test_api_client_can_reach_register_endpoint - asser...
+======================== 1 failed, 8 warnings in 0.54s =========================

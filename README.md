@@ -34,6 +34,9 @@
     ```
     Replace the placeholders with the appropriate values for your email service provider.
 ## Recent Changes
+- [x] Integrate AI Gateway (Groq) for dynamic text generation.
+- [x] Create Product Description Generator endpoint.
+- [x] Create Admin Triage Summary endpoint.
 - Pinned dependencies and split requirements into base/dev/test (Phase 0 Step 1)
 - Added pre-commit (ruff, black, isort) and fixed lint baseline (Phase 0 Step 2)
 - Introduced pytest + factory_boy scaffolding with first smoke tests (Phase 0 Step 3)
