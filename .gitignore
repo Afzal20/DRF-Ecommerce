@@ -12,3 +12,7 @@ db.sqlite3
 *.env
 staticfiles/
 media/
+media/
+
+# Internal planning documents
+TRANSFORMATION_PLAN.md
