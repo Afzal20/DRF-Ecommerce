@@ -23,6 +23,7 @@ from .models import (
     Size,
     Slider,
 )
+from .permissions import IsOwner
 from .serializers import (
     BillingAddressSerilizers,
     CartSerilizers,
@@ -140,19 +141,23 @@ class SliderViews(generics.ListAPIView):
     queryset = Slider.objects.all()
 
 
-class BillingAddressViews(generics.CreateAPIView):
-    permission_classes = [IsAuthenticated]
+class BillingAddressViews(generics.ListCreateAPIView):
+    permission_classes = [IsAuthenticated, IsOwner]
     serializer_class = BillingAddressSerilizers
-    queryset = BillingAddress.objects.all()
+
+    def get_queryset(self):
+        return BillingAddress.objects.filter(user=self.request.user)
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
 
 
-class PaymentViews(generics.CreateAPIView):
-    permission_classes = [IsAuthenticated]
+class PaymentViews(generics.ListCreateAPIView):
+    permission_classes = [IsAuthenticated, IsOwner]
     serializer_class = PaymentSerilizers
-    queryset = Payment.objects.all()
+
+    def get_queryset(self):
+        return Payment.objects.filter(user=self.request.user)
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
@@ -164,10 +169,12 @@ class CouponViews(generics.CreateAPIView):
     queryset = Coupon.objects.all()
 
 
-class RefundViews(generics.CreateAPIView):
-    permission_classes = [IsAuthenticated]
+class RefundViews(generics.ListCreateAPIView):
+    permission_classes = [IsAuthenticated, IsOwner]
     serializer_class = RefundSerilizers
-    queryset = Refund.objects.all()
+
+    def get_queryset(self):
+        return Refund.objects.filter(order__user=self.request.user)
 
 
 class RatingViews(generics.ListAPIView):
@@ -189,9 +196,8 @@ class ColorViews(generics.ListAPIView):
 
 
 class CartViews(generics.ListCreateAPIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsOwner]
     serializer_class = CartSerilizers
-    queryset = Cart.objects.all()
 
     def get_queryset(self):
         return Cart.objects.filter(user_name=self.request.user)
@@ -201,9 +207,8 @@ class CartViews(generics.ListCreateAPIView):
 
 
 class OrderViews(generics.ListCreateAPIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsOwner]
     serializer_class = OrderSerilizers
-    queryset = Order.objects.all()
 
     def get_queryset(self):
         return Order.objects.filter(user=self.request.user)
@@ -212,7 +217,9 @@ class OrderViews(generics.ListCreateAPIView):
         serializer.save(user=self.request.user)
 
 
-class OrderItemViews(generics.CreateAPIView):
-    permission_classes = [IsAuthenticated]
+class OrderItemViews(generics.ListCreateAPIView):
+    permission_classes = [IsAuthenticated, IsOwner]
     serializer_class = OrderItemSerilizers
-    queryset = OrderItem.objects.all()
+
+    def get_queryset(self):
+        return OrderItem.objects.filter(order__user=self.request.user)
