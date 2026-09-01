@@ -64,7 +64,7 @@ class ItemAdmin(admin.ModelAdmin):
         first_image = obj.images.first()
         if first_image:
             return format_html(
-                '<img src="{}" width="50" height="50" />'.format(first_image.image.url)
+                '<img src="{}" width="50" height="50" />', first_image.image.url
             )
         return None
 
