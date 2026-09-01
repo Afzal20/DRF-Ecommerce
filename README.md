@@ -37,3 +37,4 @@
 - Pinned dependencies and split requirements into base/dev/test (Phase 0 Step 1)
 - Added pre-commit (ruff, black, isort) and fixed lint baseline (Phase 0 Step 2)
 - Introduced pytest + factory_boy scaffolding with first smoke tests (Phase 0 Step 3)
+- Added GitHub Actions CI pipeline with linting, testing, and pip-audit (Phase 0 Step 4)
