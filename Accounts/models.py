@@ -45,17 +45,21 @@ class CustomUserModel(AbstractUser, PermissionsMixin):
     username = None
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []
-    OTP = models.CharField(max_length=6, blank=True, null=True)
+    OTP = models.CharField(max_length=128, blank=True, null=True)
     OTP_expiry = models.DateTimeField(blank=True, null=True)
     is_OTP_varified = models.BooleanField(default=False)
 
     objects = CustomUserManager()
 
     def generate_otp(self):
-        self.OTP = str(secrets.randbelow(900000) + 100000)
+        from django.contrib.auth.hashers import make_password
+
+        raw_otp = str(secrets.randbelow(900000) + 100000)
+        self.OTP = make_password(raw_otp)
         self.OTP_expiry = timezone.now() + timedelta(minutes=5)
         self.is_OTP_varified = False
         self.save()
+        return raw_otp
 
     def __str__(self):
         return self.email

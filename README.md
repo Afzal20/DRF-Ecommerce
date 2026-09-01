@@ -41,3 +41,4 @@
 - Hardened DEBUG and removed insecure SECRET_KEY fallback (Phase 0 Step 5)
 - Created Architecture Decision Records (ADRs) directory and first five ADRs (Phase 0 Step 6)
 - Enforced JWT rotation and blacklist, shortened token lifetimes (Phase 1 Step 7)
+- Hashed OTP storage with constant-time verification and enforced single-use (Phase 1 Step 8)

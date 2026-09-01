@@ -86,11 +86,11 @@ class ResetPasswordRequestSerializer(serializers.Serializer):
             raise serializers.ValidationError("User with this email does not exist.")
 
         # generate the OTP
-        user.generate_otp()
+        raw_otp = user.generate_otp()
 
         send_email(
             "Password Reset OTP",
-            f"Your OTP for password reset is {user.OTP}. It is valid for 10 minutes.",
+            f"Your OTP for password reset is {raw_otp}. It is valid for 10 minutes.",
             "afzalhossen2019@gmail.com",
             [user.email],
             fail_silently=False,
@@ -112,10 +112,17 @@ class OtpVarificationSerializer(serializers.Serializer):
         except User.DoesNotExist:
             raise serializers.ValidationError("User with this email does not exist.")
 
-        if user.OTP != data["otp"] or user.OTP_expiry < timezone.now():
+        from django.contrib.auth.hashers import check_password
+
+        if (
+            not user.OTP
+            or not check_password(data["otp"], user.OTP)
+            or user.OTP_expiry < timezone.now()
+        ):
             raise serializers.ValidationError("Invalid or expired OTP.")
 
         user.is_OTP_varified = True
+        user.OTP = None  # Single-use enforcement
         user.save()
 
         return data
