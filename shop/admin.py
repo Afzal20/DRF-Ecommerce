@@ -21,6 +21,7 @@ from .models import (
     Refund,
     Size,
     Slider,
+    Vendor,
 )
 
 admin.site.site_header = "Wellcome to Ecom Admin Panel"
@@ -57,6 +58,7 @@ class ItemAdmin(admin.ModelAdmin):
         "type",
         "get_first_image_url",
         "description",
+        "vendor",
         "is_featured",
     ]
 
@@ -73,6 +75,10 @@ class ItemAdmin(admin.ModelAdmin):
 
 class CategoryAdmin(admin.ModelAdmin):
     list_display = ["name"]
+
+
+class VendorAdmin(admin.ModelAdmin):
+    list_display = ["store_name", "user", "created_at"]
 
 
 class DistrictsAdmin(admin.ModelAdmin):
@@ -162,6 +168,7 @@ class OrderItemAdmin(admin.ModelAdmin):
 
 # Registering Models
 admin.site.register(Districts, DistrictsAdmin)
+admin.site.register(Vendor, VendorAdmin)
 admin.site.register(Category, CategoryAdmin)
 admin.site.register(ItemType, ItemTypeAdmin)
 admin.site.register(Size, SizeAdmin)

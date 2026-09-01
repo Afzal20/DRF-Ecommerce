@@ -50,6 +50,20 @@ class Color(models.Model):
         return self.name
 
 
+class Vendor(models.Model):
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="vendor_profile",
+    )
+    store_name = models.CharField(max_length=200)
+    store_description = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.store_name
+
+
 class Item(models.Model):
     title = models.CharField(max_length=200)
     image = models.ImageField(upload_to="images/")
@@ -65,6 +79,9 @@ class Item(models.Model):
     is_featured = models.BooleanField(default=False)
     is_bestselling = models.BooleanField(default=False)
     colors = models.ManyToManyField(Color, through="ItemColor")
+    vendor = models.ForeignKey(
+        Vendor, on_delete=models.CASCADE, related_name="items", null=True, blank=True
+    )
 
     def __str__(self):
         return f"{self.title} ({self.product_id})"
