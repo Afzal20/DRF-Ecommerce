@@ -1,25 +1,47 @@
 from django.contrib import admin
 from django.utils.html import format_html
+
 from .models import (
-    ContactMessage, Districts, Category, ItemType, Order, Size, Rating, Color,
-    Item, ItemImage, ItemSize, ItemColor, Cart, Slider, BillingAddress, Payment, Coupon, Refund
+    BillingAddress,
+    Cart,
+    Category,
+    Color,
+    ContactMessage,
+    Coupon,
+    Districts,
+    Item,
+    ItemColor,
+    ItemImage,
+    ItemSize,
+    ItemType,
+    Order,
+    OrderItem,
+    Payment,
+    Rating,
+    Refund,
+    Size,
+    Slider,
 )
 
-admin.site.site_header = 'Wellcome to Ecom Admin Panel'
-admin.site.index_title = 'Ecom Admin Panel'
+admin.site.site_header = "Wellcome to Ecom Admin Panel"
+admin.site.index_title = "Ecom Admin Panel"
+
 
 # Inline Admin Models
 class ItemImageInline(admin.TabularInline):
     model = ItemImage
     extra = 1
 
+
 class ItemSizeInline(admin.TabularInline):
     model = ItemSize
     extra = 1
 
+
 class ItemColorInline(admin.TabularInline):
     model = ItemColor
     extra = 1
+
 
 class ItemAdmin(admin.ModelAdmin):
     inlines = [ItemImageInline, ItemSizeInline, ItemColorInline]
@@ -41,71 +63,102 @@ class ItemAdmin(admin.ModelAdmin):
     def get_first_image_url(self, obj):
         first_image = obj.images.first()
         if first_image:
-            return format_html('<img src="{}" width="50" height="50" />'.format(first_image.image.url))
+            return format_html(
+                '<img src="{}" width="50" height="50" />'.format(first_image.image.url)
+            )
         return None
 
-    get_first_image_url.short_description = 'First Image'
+    get_first_image_url.short_description = "First Image"
+
 
 class CategoryAdmin(admin.ModelAdmin):
-    list_display = ['name']
+    list_display = ["name"]
+
 
 class DistrictsAdmin(admin.ModelAdmin):
-    list_display = ['title']
+    list_display = ["title"]
+
 
 class ItemTypeAdmin(admin.ModelAdmin):
-    list_display = ['name']
+    list_display = ["name"]
+
 
 class SizeAdmin(admin.ModelAdmin):
-    list_display = ['name']
+    list_display = ["name"]
+
 
 class RatingAdmin(admin.ModelAdmin):
-    list_display = ['value']
+    list_display = ["value"]
+
 
 class ColorAdmin(admin.ModelAdmin):
-    list_display = ['name', 'code']
+    list_display = ["name", "code"]
+
 
 class CartAdmin(admin.ModelAdmin):
-    list_display = ['user_name', 'item', 'item_color_code', 'item_size', 'quantity', 'ordered', 'delivered', 'applied_coupon']
-    search_fields = ['user_name__username', 'item__title']
-    list_filter = ['ordered', 'delivered', 'applied_coupon']
+    list_display = [
+        "user_name",
+        "item",
+        "item_color_code",
+        "item_size",
+        "quantity",
+        "ordered",
+        "delivered",
+        "applied_coupon",
+    ]
+    search_fields = ["user_name__username", "item__title"]
+    list_filter = ["ordered", "delivered", "applied_coupon"]
+
 
 class BillingAddressAdmin(admin.ModelAdmin):
-    list_display = ('user', 'street_address', 'apartment_address', 'country', 'zip')
-    search_fields = ('user__username', 'street_address', 'apartment_address')
-    list_filter = ('country',)
+    list_display = ("user", "street_address", "apartment_address", "country", "zip")
+    search_fields = ("user__username", "street_address", "apartment_address")
+    list_filter = ("country",)
+
 
 class PaymentAdmin(admin.ModelAdmin):
-    list_display = ('user', 'amount', 'timestamp', 'payment_method', 'charge_id', 'success')
-    search_fields = ('user__username', 'charge_id')
-    list_filter = ('success', 'payment_method')
+    list_display = (
+        "user",
+        "amount",
+        "timestamp",
+        "payment_method",
+        "charge_id",
+        "success",
+    )
+    search_fields = ("user__username", "charge_id")
+    list_filter = ("success", "payment_method")
+
 
 class CouponAdmin(admin.ModelAdmin):
-    list_display = ('code', 'amount')
-    search_fields = ('code',)
+    list_display = ("code", "amount")
+    search_fields = ("code",)
+
 
 class RefundAdmin(admin.ModelAdmin):
-    list_display = ('order', 'reason', 'accepted', 'email')
-    search_fields = ('order__id', 'email')
-    list_filter = ('accepted',)
+    list_display = ("order", "reason", "accepted", "email")
+    search_fields = ("order__id", "email")
+    list_filter = ("accepted",)
+
 
 class SliderAdmin(admin.ModelAdmin):
-    list_display = ('title',)
+    list_display = ("title",)
 
-from django.contrib import admin
-from .models import Order, OrderItem
 
 class OrderItemInline(admin.TabularInline):
     model = OrderItem
     extra = 1
 
+
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
-    list_display = ('id', 'first_name', 'last_name', 'created_at', 'total_price')
+    list_display = ("id", "first_name", "last_name", "created_at", "total_price")
     inlines = [OrderItemInline]
+
 
 @admin.register(OrderItem)
 class OrderItemAdmin(admin.ModelAdmin):
-    list_display = ('order', 'quantity', 'price', 'color', 'size')
+    list_display = ("order", "quantity", "price", "color", "size")
+
 
 # Registering Models
 admin.site.register(Districts, DistrictsAdmin)

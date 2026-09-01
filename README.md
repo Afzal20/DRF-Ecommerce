@@ -33,3 +33,6 @@
     DEFAULT_FROM_EMAIL = 'your_default_from_email'
     ```
     Replace the placeholders with the appropriate values for your email service provider.
+## Recent Changes
+- Pinned dependencies and split requirements into base/dev/test (Phase 0 Step 1)
+- Added pre-commit (ruff, black, isort) and fixed lint baseline (Phase 0 Step 2)

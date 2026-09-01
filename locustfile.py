@@ -7,7 +7,6 @@ import uuid
 from locust import HttpUser, between, constant_pacing, task
 from locust.exception import StopUser
 
-
 TRUTHY = {"1", "true", "yes", "y", "on"}
 
 
@@ -285,11 +284,7 @@ class BruteForceAndRateLimitUser(SecurityAssertionsMixin, HttpUser):
                 if response.status_code in BLOCK_STATUSES:
                     blocked = True
 
-                if (
-                    STRICT_SECURITY_EXPECTATIONS
-                    and is_last_attempt
-                    and not blocked
-                ):
+                if STRICT_SECURITY_EXPECTATIONS and is_last_attempt and not blocked:
                     extra_issues.append(
                         "no brute-force block or rate-limit status after "
                         f"{BRUTE_FORCE_ATTEMPTS} invalid login attempts"
@@ -323,11 +318,7 @@ class BruteForceAndRateLimitUser(SecurityAssertionsMixin, HttpUser):
                 if response.status_code in BLOCK_STATUSES:
                     blocked = True
 
-                if (
-                    STRICT_SECURITY_EXPECTATIONS
-                    and is_last_request
-                    and not blocked
-                ):
+                if STRICT_SECURITY_EXPECTATIONS and is_last_request and not blocked:
                     extra_issues.append(
                         "no rate-limit status after "
                         f"{RATE_LIMIT_BURST} rapid login requests"
@@ -356,11 +347,7 @@ class BruteForceAndRateLimitUser(SecurityAssertionsMixin, HttpUser):
                 if response.status_code in BLOCK_STATUSES:
                     blocked = True
 
-                if (
-                    STRICT_SECURITY_EXPECTATIONS
-                    and is_last_request
-                    and not blocked
-                ):
+                if STRICT_SECURITY_EXPECTATIONS and is_last_request and not blocked:
                     extra_issues.append(
                         "no rate-limit status after "
                         f"{RATE_LIMIT_BURST} rapid public API requests"

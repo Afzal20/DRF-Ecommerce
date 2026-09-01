@@ -6,23 +6,23 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('Accounts', '0003_alter_emailotp_expires_at'),
+        ("Accounts", "0003_alter_emailotp_expires_at"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='customusermodel',
-            name='otp',
+            model_name="customusermodel",
+            name="otp",
             field=models.CharField(blank=True, max_length=6, null=True),
         ),
         migrations.AddField(
-            model_name='customusermodel',
-            name='otp_exp',
+            model_name="customusermodel",
+            name="otp_exp",
             field=models.DateTimeField(blank=True, null=True),
         ),
         migrations.AddField(
-            model_name='customusermodel',
-            name='otp_verified',
+            model_name="customusermodel",
+            name="otp_verified",
             field=models.BooleanField(default=False),
         ),
     ]

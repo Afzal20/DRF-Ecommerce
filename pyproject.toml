@@ -53,3 +53,5 @@ dev = [
     "pytest-django>=4.14.0",
     "ruff>=0.16.5",
 ]
+[tool.isort]
+profile = "black"

@@ -14,12 +14,10 @@ import json
 import os
 import re
 import time
-from pathlib import Path
 from urllib.parse import urlparse
 
 import requests
 from django.conf import settings
-from django.core.files.base import ContentFile
 from django.core.management.base import BaseCommand, CommandError
 
 from shop.models import Category, Item, ItemImage, ItemType, Rating
@@ -136,7 +134,7 @@ class Command(BaseCommand):
 
             # Check for existing product
             if skip_existing and Item.objects.filter(product_id=sku).exists():
-                self.stdout.write(f"  ⏭  Skipped (already exists)")
+                self.stdout.write("  ⏭  Skipped (already exists)")
                 skipped_count += 1
                 continue
 
@@ -151,15 +149,11 @@ class Command(BaseCommand):
 
         # Summary
         self.stdout.write("\n" + "=" * 60)
-        self.stdout.write(
-            self.style.SUCCESS(f"✅ Created : {created_count}")
-        )
+        self.stdout.write(self.style.SUCCESS(f"✅ Created : {created_count}"))
         if skipped_count:
             self.stdout.write(f"⏭  Skipped : {skipped_count}")
         if error_count:
-            self.stdout.write(
-                self.style.ERROR(f"❌ Errors  : {error_count}")
-            )
+            self.stdout.write(self.style.ERROR(f"❌ Errors  : {error_count}"))
         self.stdout.write("=" * 60 + "\n")
 
     def _import_single_product(self, p: dict, sku: str, title: str):

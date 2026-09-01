@@ -6,26 +6,26 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('Accounts', '0005_remove_customusermodel_otp_and_more'),
+        ("Accounts", "0005_remove_customusermodel_otp_and_more"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='customusermodel',
-            name='OTP',
+            model_name="customusermodel",
+            name="OTP",
             field=models.CharField(blank=True, max_length=6, null=True),
         ),
         migrations.AddField(
-            model_name='customusermodel',
-            name='OTP_expiry',
+            model_name="customusermodel",
+            name="OTP_expiry",
             field=models.DateTimeField(blank=True, null=True),
         ),
         migrations.AddField(
-            model_name='customusermodel',
-            name='is_OTP_varified',
+            model_name="customusermodel",
+            name="is_OTP_varified",
             field=models.BooleanField(default=False),
         ),
         migrations.DeleteModel(
-            name='EmailOTP',
+            name="EmailOTP",
         ),
     ]

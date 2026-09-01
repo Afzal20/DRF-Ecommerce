@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('Accounts', '0002_deleteaccuntslist_emailotp'),
+        ("Accounts", "0002_deleteaccuntslist_emailotp"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='emailotp',
-            name='expires_at',
+            model_name="emailotp",
+            name="expires_at",
             field=models.DateTimeField(blank=True),
         ),
     ]
