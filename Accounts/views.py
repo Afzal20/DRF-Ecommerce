@@ -132,8 +132,6 @@ class GoogleLoginView(APIView):
         serializer.is_valid(raise_exception=True)
         id_token_jwt = serializer.validated_data["id_token"]
 
-        import uuid
-
         import requests
         from django.contrib.auth import get_user_model
 
@@ -163,7 +161,6 @@ class GoogleLoginView(APIView):
                 defaults={
                     "first_name": first_name,
                     "last_name": last_name,
-                    "username": email.split("@")[0] + str(uuid.uuid4())[:8],
                 },
             )
             if created:
@@ -193,6 +190,13 @@ class GoogleLoginView(APIView):
             # Invalid token
             return Response(
                 {"error": "Invalid token"}, status=status.HTTP_400_BAD_REQUEST
+            )
+        except Exception as e:
+            import traceback
+
+            traceback.print_exc()
+            return Response(
+                {"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
 

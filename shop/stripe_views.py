@@ -22,6 +22,16 @@ class CreateStripeCheckoutSessionView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request, *args, **kwargs):
+        # Set the API key per-request so it reflects the current settings
+        # (the module-level assignment is cached once at import time).
+        stripe.api_key = settings.STRIPE_SECRET_KEY
+
+        if not stripe.api_key:
+            return Response(
+                {"error": "Stripe API key is not configured on the server."},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
         order_id = request.data.get("order_id")
         if not order_id:
             return Response(

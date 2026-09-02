@@ -206,6 +206,19 @@ class CartViews(generics.ListCreateAPIView):
         serializer.save(user_name=self.request.user)
 
 
+class CartItemViews(generics.RetrieveUpdateDestroyAPIView):
+    """
+    Detail view for a single cart line item (retrieve / update quantity / delete).
+    Used by the storefront to remove items after checkout and to update quantities.
+    """
+
+    permission_classes = [IsAuthenticated, IsOwner]
+    serializer_class = CartSerilizers
+
+    def get_queryset(self):
+        return Cart.objects.filter(user_name=self.request.user)
+
+
 class OrderViews(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated, IsOwner]
     serializer_class = OrderSerilizers

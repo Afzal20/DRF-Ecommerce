@@ -143,7 +143,9 @@ class CartSerilizers(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
-        representation["item"] = ItemSerilizers(instance.item).data
+        representation["item"] = ItemSerilizers(
+            instance.item, context=self.context
+        ).data
         return representation
 
 

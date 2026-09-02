@@ -3,6 +3,7 @@ from django.urls import path
 from .stripe_views import CreateStripeCheckoutSessionView, StripeWebhookView
 from .views import (
     BillingAddressViews,
+    CartItemViews,
     CartViews,
     CategoryViews,
     ColorViews,
@@ -44,6 +45,7 @@ urlpatterns = [
     path("coupons/", CouponViews.as_view(), name="coupons"),
     path("refunds/", RefundViews.as_view(), name="refunds"),
     path("carts/", CartViews.as_view(), name="carts"),
+    path("carts/<int:pk>/", CartItemViews.as_view(), name="cart-detail"),
     path("contacts/", ContactMessageViews.as_view(), name="contacts"),
     path("orders/", OrderViews.as_view(), name="orders"),
     path("order-items/", OrderItemViews.as_view(), name="order-items"),
