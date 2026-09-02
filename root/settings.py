@@ -23,12 +23,14 @@ ALLOWED_HOSTS = [
 ]
 
 INSTALLED_APPS = [
+    "daphne",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "channels",
     "corsheaders",
     "rest_framework_simplejwt",
     "rest_framework",
@@ -38,6 +40,15 @@ INSTALLED_APPS = [
     "shop",
     "rest_framework_simplejwt.token_blacklist",
 ]
+
+ASGI_APPLICATION = "root.asgi.application"
+
+# In-memory channel layer: fine for a single-process dev server (runserver
+# with daphne). For production with multiple workers, switch to
+# channels_redis.RedisChannelLayer.
+CHANNEL_LAYERS = {
+    "default": {"BACKEND": "channels.layers.InMemoryChannelLayer"},
+}
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -126,6 +137,10 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 STRIPE_PUBLIC_KEY = os.getenv("STRIPE_PUBLIC_KEY", "")
 STRIPE_SECRET_KEY = os.getenv("STRIPE_SECRET_KEY", "")
 STRIPE_WEBHOOK_SECRET = os.getenv("STRIPE_WEBHOOK_SECRET", "")
+
+# OpenRouter (AI shopping assistant) — OPEN_ROUTER_API_KEY is read from the
+# environment directly in ai/assistant.py.
+OPEN_ROUTER_MODEL = os.getenv("OPEN_ROUTER_MODEL", "google/gemma-4-31b-it:free")
 
 STORAGES = {
     "default": {

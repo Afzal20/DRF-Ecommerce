@@ -142,6 +142,35 @@ uv run python manage.py runserver
 | POST | `product-description/` | Generate a product description (Groq) |
 | POST | `admin-triage/` | Admin triage summary (Groq) |
 
+### AI Shopping Assistant (WebSocket)
+
+`ws://127.0.0.1:8000/ws/ai/chat/` — a streaming shopping assistant powered by **OpenRouter** over **Django Channels**. Authenticated with the same `access_token` httpOnly cookie as the REST API (unauthenticated sockets are closed with code `4401`).
+
+Protocol (JSON frames):
+
+```
+client -> {"type": "chat", "message": "...", "history": [{"role": "user"|"assistant", "content": "..."}]}
+server <- {"type": "connected", "model": "...", "greeting": "..."}
+server <- {"type": "start", "model": "..."}
+server <- {"type": "token", "text": "..."}     (repeated, in order)
+server <- {"type": "done"}
+server <- {"type": "error", "message": "..."}
+```
+
+- Answers are grounded in the live product catalog (title, product_id, brand, price, stock, category).
+- Model is configurable via `OPEN_ROUTER_MODEL` (default `google/gemma-4-31b-it:free`) with automatic fallback to other free models if one is rate-limited upstream.
+- Every call is logged to `AICallLog` (provider `openrouter`) and visible in the Django admin.
+
+Quick browser test (from any page on the API origin):
+
+```js
+const socket = new WebSocket("ws://127.0.0.1:8000/ws/ai/chat/");
+socket.onmessage = (e) => console.log(JSON.parse(e.data));
+socket.onopen = () =>
+  socket.send(JSON.stringify({ type: "chat", message: "What lipsticks do you have?" }));
+```
+
+
 ## Stripe Payments in Development
 
 1. Put your `sk_test_...` key in `.env` and restart the server.
@@ -208,6 +237,7 @@ Design decisions are documented in `docs/adr/`:
 - [x] Absolute media URLs in serializers (cart/product images work from any origin).
 - [x] Admin dashboard improvements: payment ↔ order tracking, date drill-down, email/charge-ID search.
 - [x] Cookie-forwarding API proxy layer for the Next.js storefront (`/api/cart`, `/api/checkout`, `/api/auth/*`).
+- [x] AI Shopping Assistant over WebSockets: Django Channels + OpenRouter with streaming, catalog grounding, and model fallback.
 - Pinned dependencies and split requirements into base/dev/test (Phase 0 Step 1)
 - Added pre-commit (ruff, black, isort) and fixed lint baseline (Phase 0 Step 2)
 - Introduced pytest + factory_boy scaffolding with first smoke tests (Phase 0 Step 3)
