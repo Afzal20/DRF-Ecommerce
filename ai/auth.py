@@ -30,6 +30,7 @@ class JWTCookieAuthMiddleware(BaseMiddleware):
         return await super().__call__(scope, receive, send)
 
     async def _resolve_user(self, scope):
+        # 1) access_token cookie (same-origin browser clients)
         headers = dict(scope.get("headers", []))
         raw_cookies = headers.get(b"cookie", b"").decode("latin-1")
         cookies = {}
@@ -38,6 +39,19 @@ class JWTCookieAuthMiddleware(BaseMiddleware):
             if name.strip():
                 cookies[name.strip()] = value.strip()
         token = cookies.get("access_token")
+
+        # 2) ?token=<jwt> query param (cross-origin storefront clients whose
+        #    httpOnly cookies live on a different host, e.g. Next.js proxy)
+        if not token:
+            query = scope.get("query_string", b"").decode("latin-1")
+            for part in query.split("&"):
+                name, _, value = part.partition("=")
+                if name == "token" and value:
+                    from urllib.parse import unquote
+
+                    token = unquote(value)
+                    break
+
         if not token:
             return AnonymousUser()
 

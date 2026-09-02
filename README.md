@@ -144,7 +144,7 @@ uv run python manage.py runserver
 
 ### AI Shopping Assistant (WebSocket)
 
-`ws://127.0.0.1:8000/ws/ai/chat/` — a streaming shopping assistant powered by **OpenRouter** over **Django Channels**. Authenticated with the same `access_token` httpOnly cookie as the REST API (unauthenticated sockets are closed with code `4401`).
+`ws://127.0.0.1:8000/ws/ai/chat/` — a streaming shopping assistant powered by **OpenRouter** over **Django Channels**. Authentication (in order): the same `access_token` httpOnly cookie as the REST API, or a short-lived JWT via `?token=<jwt>` query param for cross-origin clients (the Next.js storefront does this via its `/api/ai/ws-token` route). Unauthenticated sockets are closed with code `4401`.
 
 Protocol (JSON frames):
 
