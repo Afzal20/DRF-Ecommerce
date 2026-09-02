@@ -46,6 +46,10 @@ class UserLoginSerializer(serializers.Serializer):
         }
 
 
+class GoogleLoginSerializer(serializers.Serializer):
+    id_token = serializers.CharField()
+
+
 # create a custom user profile serializer
 class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:

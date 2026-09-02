@@ -141,6 +141,11 @@ class CartSerilizers(serializers.ModelSerializer):
         fields = "__all__"
         read_only_fields = ("user_name", "ordered", "delivered", "order_status")
 
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation["item"] = ItemSerilizers(instance.item).data
+        return representation
+
 
 class OrderSerilizers(serializers.ModelSerializer):
     class Meta:

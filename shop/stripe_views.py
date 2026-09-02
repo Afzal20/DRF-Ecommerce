@@ -62,8 +62,12 @@ class CreateStripeCheckoutSessionView(APIView):
                     "order_id": order.id,
                     "user_id": request.user.id,
                 },
-                success_url=request.build_absolute_uri("/payment-success/"),
-                cancel_url=request.build_absolute_uri("/payment-cancel/"),
+                success_url=request.data.get(
+                    "success_url", request.build_absolute_uri("/payment-success/")
+                ),
+                cancel_url=request.data.get(
+                    "cancel_url", request.build_absolute_uri("/payment-cancel/")
+                ),
             )
 
             # Store the session ID in the order transaction_id

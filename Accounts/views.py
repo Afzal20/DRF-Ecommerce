@@ -12,6 +12,7 @@ from rest_framework_simplejwt.views import TokenRefreshView, TokenVerifyView
 
 from Accounts.serializers import (
     ChangePasswordSerializer,
+    GoogleLoginSerializer,
     OtpVarificationSerializer,
     PasswordResetSerializer,
     ResetPasswordRequestSerializer,
@@ -119,6 +120,80 @@ class UserLoginView(APIView):
         # )
 
         return response
+
+
+@method_decorator(csrf_exempt, name="dispatch")
+class GoogleLoginView(APIView):
+    permission_classes = [permissions.AllowAny]
+    throttle_scope = "auth"
+
+    def post(self, request, *args, **kwargs):
+        serializer = GoogleLoginSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        id_token_jwt = serializer.validated_data["id_token"]
+
+        import uuid
+
+        import requests
+        from django.contrib.auth import get_user_model
+
+        User = get_user_model()
+
+        try:
+            # use the access_token to fetch user info from Google
+            response = requests.get(
+                "https://www.googleapis.com/oauth2/v3/userinfo",
+                headers={"Authorization": f"Bearer {id_token_jwt}"},
+            )
+
+            if not response.ok:
+                return Response(
+                    {"error": "Invalid token"}, status=status.HTTP_400_BAD_REQUEST
+                )
+
+            idinfo = response.json()
+
+            email = idinfo["email"]
+            first_name = idinfo.get("given_name", "")
+            last_name = idinfo.get("family_name", "")
+
+            # Check if user exists, else create
+            user, created = User.objects.get_or_create(
+                email=email,
+                defaults={
+                    "first_name": first_name,
+                    "last_name": last_name,
+                    "username": email.split("@")[0] + str(uuid.uuid4())[:8],
+                },
+            )
+            if created:
+                # Set unusable password since they use Google
+                user.set_unusable_password()
+                user.save()
+
+            # Generate JWT tokens
+            refresh = RefreshToken.for_user(user)
+            access_token = refresh.access_token
+
+            return Response(
+                {
+                    "message": "Login successful",
+                    "user": {
+                        "id": user.id,
+                        "email": user.email,
+                        "first_name": user.first_name,
+                        "last_name": user.last_name,
+                    },
+                    "access_token": str(access_token),
+                    "refresh_token": str(refresh),
+                },
+                status=status.HTTP_200_OK,
+            )
+        except ValueError:
+            # Invalid token
+            return Response(
+                {"error": "Invalid token"}, status=status.HTTP_400_BAD_REQUEST
+            )
 
 
 class UserProfileView(generics.RetrieveUpdateAPIView):
