@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.urls import reverse
 from django.utils.html import format_html
 
 from .models import (
@@ -112,18 +113,19 @@ class CartAdmin(admin.ModelAdmin):
         "delivered",
         "applied_coupon",
     ]
-    search_fields = ["user_name__username", "item__title"]
+    search_fields = ["user_name__email", "item__title"]
     list_filter = ["ordered", "delivered", "applied_coupon"]
 
 
 class BillingAddressAdmin(admin.ModelAdmin):
     list_display = ("user", "street_address", "apartment_address", "country", "zip")
-    search_fields = ("user__username", "street_address", "apartment_address")
+    search_fields = ("user__email", "street_address", "apartment_address")
     list_filter = ("country",)
 
 
 class PaymentAdmin(admin.ModelAdmin):
     list_display = (
+        "id",
         "user",
         "amount",
         "timestamp",
@@ -131,8 +133,22 @@ class PaymentAdmin(admin.ModelAdmin):
         "charge_id",
         "success",
     )
-    search_fields = ("user__username", "charge_id")
+    search_fields = ("user__email", "charge_id")
     list_filter = ("success", "payment_method")
+    date_hierarchy = "timestamp"
+    ordering = ("-timestamp",)
+    readonly_fields = ("timestamp",)
+
+    @admin.display(description="Related Order")
+    def related_order(self, obj):
+        order = Order.objects.filter(transaction_id=obj.charge_id).first()
+        if order:
+            url = reverse("admin:shop_order_change", args=[order.id])
+            return format_html('<a href="{}">Order #{}</a>', url, order.id)
+        return "-"
+
+    def get_list_display(self, request):
+        return list(self.list_display) + ["related_order"]
 
 
 class CouponAdmin(admin.ModelAdmin):
@@ -157,7 +173,19 @@ class OrderItemInline(admin.TabularInline):
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
-    list_display = ("id", "first_name", "last_name", "created_at", "total_price")
+    list_display = (
+        "id",
+        "user",
+        "first_name",
+        "last_name",
+        "created_at",
+        "total_price",
+        "ordered",
+        "payment_method",
+        "transaction_id",
+    )
+    search_fields = ("user__email", "first_name", "last_name", "transaction_id")
+    list_filter = ("ordered", "payment_method")
     inlines = [OrderItemInline]
 
 
