@@ -1,10 +1,34 @@
 # DRF-Ecommerce
 
-A Django REST Framework e-commerce backend with **cookie-based JWT authentication** (including Google Sign-In), **Stripe Checkout** payments, and **AI-powered product tooling** via Groq. Designed to pair with a modern SPA / Next.js storefront.
+A production-ready Django REST Framework e-commerce backend featuring **cookie-based JWT authentication** (including Google Sign-In), **Stripe Checkout** payments, **real-time AI Shopping Assistant** (Django Channels + OpenRouter streaming), and an **easy-to-use, pure light theme administrative back-office**. Designed to pair seamlessly with a modern Next.js / React storefront.
 
-## you can use it where you need 2 type of user. ( superuser and visitor)
+---
 
-![UI Screenshot](img/UI.png)
+## Administration and API Visual Showcase
+
+The backend includes a redesigned, modern light-theme back-office interface and interactive Swagger API documentation.
+
+### 1. Administrative Home Dashboard
+![Django Admin Dashboard](img/01_django_admin_dashboard.png)
+*Central back-office navigation hub with pure light theme styling, clear application modules, and recent activity audit logs.*
+
+### 2. Product Catalog and Inventory Management
+![Product Catalog Management](img/02_admin_products_management.png)
+*High-efficiency catalog manager featuring 44x44 product image thumbnails, brand names, monospace SKU badges, dynamic stock status pills (In Stock, Low Stock, Out of Stock), star ratings, inline editable pricing controls, and sidebar category filters.*
+
+### 3. Order Management and Payment Auditing
+![Order Management](img/03_admin_orders_management.png)
+*Real-time orders changelist displaying monospace order identifiers, customer name and email, formatted dollar totals, payment status badges (Paid & Placed vs. Pending), payment method pills, transaction codes, and date filters.*
+
+### 4. Product Details and Variant Editor
+![Product Details Change Form](img/04_admin_product_changeform.png)
+*Streamlined changeform interface with card fieldsets, rounded inputs with focus rings, inline image galleries, sizes, colors, and a sticky bottom action bar for rapid saving.*
+
+### 5. Interactive Swagger and OpenAPI Documentation
+![Swagger API Documentation](img/05_swagger_api_documentation.png)
+*Interactive REST API documentation generated via Swagger UI at `/docs/`, enabling live testing and exploration of all Accounts, Shop, Order, AI, and Store Configuration endpoints.*
+
+---
 
 ## Features
 
@@ -15,31 +39,47 @@ A Django REST Framework e-commerce backend with **cookie-based JWT authenticatio
   - Email OTP flow for password reset (hashed OTP storage, single-use, constant-time verification)
   - Logout (cookie + token blacklist), token refresh/verify, password change, user profile
   - Scoped rate throttling for auth, OTP, and anonymous browsing
-- **Shop**
-  - Items with images, sizes, colors, variants, ratings, and vendor support (multi-vendor)
+- **Shop & Catalog Management**
+  - Items with images, sizes, colors, variants, ratings, and multi-vendor support
+  - Dynamic promotional banners (`NewArrivalBanner`, `NewArrivalBannerImage`) with multi-image support
+  - Dynamic site settings (`SiteSetting`) for hotline phone number, labels, and announcement banners
   - Categories, item types, districts, sliders, hero sections, coupons, refunds, contact messages
   - Per-user cart (create / list / update quantity / delete line items)
   - Orders & order items; Stripe Checkout session creation
   - Stripe webhook handler that marks orders paid and records payments
-- **AI (Groq)**
-  - Product description generator endpoint
-  - Admin triage summary endpoint
-- **Admin dashboard**
+- **Real-Time AI Shopping Assistant (WebSockets)**
+  - Streaming conversational shopping assistant over WebSockets (`/ws/ai/chat/`)
+  - OpenRouter LLM integration with automatic candidate model fallback
+  - Catalog grounding: references live product database (prices, stock, discounts, categories)
+  - Interactive client action execution (theme toggling, category filtering, cart operations, checkout navigation)
+  - Audit logging of all AI queries, token latency, and status in `AICallLog`
+- **Modern Light Theme Admin Dashboard**
+  - Strictly enforced pure light theme (suppressed dark mode stylesheets, scripts, and toggle switches)
+  - Product thumbnails, SKU badges, star ratings, and real-time stock pills
+  - Inline editable fields for price, discount price, featured status, and bestseller status
   - Payment tracking with related-order links, date drill-down, and search by email / charge ID
   - Order tracking with paid status, payment method, and Stripe transaction ID
-- **API docs** — Swagger UI at `/docs/` (enabled when `DEBUG=True`)
-- **Production hardening** — HSTS, SSL redirect, secure cookies, Swagger guard, whitenoise
+  - Sticky action bar (`.submit-row`) on changeform pages
+- **API Documentation & Hardening**
+  - Interactive Swagger UI at `/docs/` and Redoc at `/redoc/`
+  - Scoped Content Security Policy (CSP) allowing admin and docs scripts/styles while locking down public endpoints
+  - Production hardening: HSTS, SSL redirect, secure cookies, Swagger guard, and Whitenoise static files
+
+---
 
 ## Tech Stack
 
 | Layer | Tools |
 |---|---|
 | Framework | Django 6.1, Django REST Framework |
+| Real-Time / WebSockets | Django Channels, Daphne, ASGI |
 | Auth | djangorestframework-simplejwt (cookie transport), google-auth |
 | Payments | Stripe (Checkout Sessions + webhooks) |
-| AI | Groq API |
-| Docs | drf-yasg (Swagger) |
+| AI Integration | OpenRouter API (streaming LLM), Groq API |
+| Docs | drf-yasg (Swagger UI, OpenAPI 2.0) |
 | Tooling | uv (package manager), pre-commit (black, isort, ruff), pytest + factory_boy, GitHub Actions CI |
+
+---
 
 ## Getting Started
 
@@ -48,7 +88,7 @@ A Django REST Framework e-commerce backend with **cookie-based JWT authenticatio
 - Python 3.12+
 - [uv](https://docs.astral.sh/uv/) (package manager)
 - A Stripe account (test mode keys) — optional until you enable checkout
-- A Groq API key — optional until you use the AI endpoints
+- An OpenRouter or Groq API key — optional until you use the AI endpoints
 
 ### 1. Clone the project
 
@@ -63,7 +103,7 @@ cd DRF_AUTH_with_Cookies
 uv sync
 ```
 
-This creates a `.venv` and installs the runtime dependencies (dev/test tools are in dependency groups).
+This creates a `.venv` and installs the runtime dependencies (dev and test tools are organized into dependency groups).
 
 ### 3. Configure environment variables
 
@@ -78,20 +118,22 @@ cp .env.example .env
 | `DJANGO_SECRET_KEY` | Yes | Secret key (no insecure fallback in production) |
 | `STRIPE_PUBLIC_KEY` | For checkout | Stripe publishable key (`pk_test_...`) |
 | `STRIPE_SECRET_KEY` | For checkout | Stripe secret key (`sk_test_...`) |
-| `STRIPE_WEBHOOK_SECRET` | For payments | Webhook signing secret (`whsec_...`) — see below |
+| `STRIPE_WEBHOOK_SECRET` | For payments | Webhook signing secret (`whsec_...`) |
+| `OPEN_ROUTER_API_KEY` | For AI assistant | OpenRouter API key for WebSocket streaming assistant |
 | `GROQ_API_KEY` | For AI endpoints | Groq API key |
 
 Email settings (for the OTP password-reset flow) live in `settings.py` — point them at your provider, or use the console backend in development:
 
 ```python
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 ```
 
-### 4. Run migrations and create a superuser
+### 4. Run migrations and populate initial data
 
 ```bash
 uv run python manage.py migrate
 uv run python manage.py createsuperuser
+uv run python push_data.py
 ```
 
 ### 5. Start the dev server
@@ -100,9 +142,12 @@ uv run python manage.py createsuperuser
 uv run python manage.py runserver
 ```
 
-- API: `http://127.0.0.1:8000/`
-- Admin: `http://127.0.0.1:8000/admin/`
-- Swagger docs: `http://127.0.0.1:8000/docs/`
+- API Base: `http://127.0.0.1:8000/`
+- Admin Dashboard: `http://127.0.0.1:8000/admin/`
+- Swagger UI Docs: `http://127.0.0.1:8000/docs/`
+- WebSocket Chat: `ws://127.0.0.1:8000/ws/ai/chat/`
+
+---
 
 ## API Overview
 
@@ -111,14 +156,14 @@ uv run python manage.py runserver
 | Method | Endpoint | Description |
 |---|---|---|
 | POST | `user/register/` | Register a new user |
-| POST | `user/login/` | Login (sets auth cookies) |
+| POST | `user/login/` | Login (sets httpOnly auth cookies) |
 | POST | `user/google-login/` | Login with a Google `id_token` |
-| GET/PATCH | `user/profile/` | View / update profile |
+| GET / PUT | `user/profile/` | View / update customer profile |
 | POST | `password/change/` | Change password |
 | POST | `token/refresh/` | Rotate refresh token |
 | POST | `token/verify/`, `token/verify-access/` | Token verification |
 | POST | `logout/` | Logout (clears cookies, blacklists token) |
-| POST | `password-reset/request/` | Request OTP |
+| POST | `password-reset/request/` | Request OTP for password reset |
 | POST | `password-reset/enterOtp/` | Verify OTP |
 | POST | `password-reset/set_new_password/` | Set new password |
 
@@ -126,56 +171,58 @@ uv run python manage.py runserver
 
 | Method | Endpoint | Description |
 |---|---|---|
-| GET | `items/`, `items/<id>/` | Product catalog (with images, variants, absolute media URLs) |
-| GET | `categories/`, `item-types/`, `sizes/`, `colors/`, `districts/`, ... | Reference data |
-| GET/POST | `carts/` | List / add cart lines (authenticated, owner-scoped) |
-| GET/PATCH/DELETE | `carts/<id>/` | Retrieve / update quantity / delete a cart line |
-| GET/POST | `orders/`, `order-items/` | Orders and their items |
+| GET | `items/`, `items/<id>/` | Product catalog (supports `search`, `category`, `min_price`, `max_price`, `is_featured`, `is_bestselling`) |
+| GET | `categories/`, `item-types/`, `sizes/`, `colors/`, `districts/` | Reference data |
+| GET | `new-arrivals-banner/` | Active promotional banner with images and URLs |
+| GET | `site-settings/` | Active site hotline, announcement badge, and store configuration |
+| GET / POST | `carts/` | List / add cart lines (authenticated, owner-scoped) |
+| GET / PATCH / DELETE | `carts/<id>/` | Retrieve / update quantity / delete a cart line |
+| GET / POST | `orders/`, `order-items/` | Orders and their associated items |
 | POST | `stripe/create-checkout-session/` | Create a Stripe Checkout session for an order |
 | POST | `stripe/webhook/` | Stripe webhook (marks order paid, records payment) |
-| CRUD | `coupons/`, `refunds/`, `payments/`, `contacts/`, ... | Supporting resources |
+| CRUD | `billing-addresses/`, `coupons/`, `refunds/`, `payments/`, `contacts/` | Supporting e-commerce resources |
 
-### AI (`/api/v1/ai/`)
+### AI Assistant & Tooling
 
-| Method | Endpoint | Description |
+| Protocol / Method | Endpoint | Description |
 |---|---|---|
-| POST | `product-description/` | Generate a product description (Groq) |
-| POST | `admin-triage/` | Admin triage summary (Groq) |
+| WebSocket | `/ws/ai/chat/` | Streaming AI assistant with live catalog grounding and action parsing |
+| GET | `/api/ai/ws-token` | Generate single-use JWT ticket for cross-origin WebSocket authentication |
+| POST | `/api/v1/ai/product-description/` | Generate product descriptions (Groq) |
+| POST | `/api/v1/ai/admin-triage/` | Admin triage summary endpoint (Groq) |
 
-### AI Shopping Assistant (WebSocket)
+---
 
-`ws://127.0.0.1:8000/ws/ai/chat/` — a streaming shopping assistant powered by **OpenRouter** over **Django Channels**. Authentication (in order): the same `access_token` httpOnly cookie as the REST API, or a short-lived JWT via `?token=<jwt>` query param for cross-origin clients (the Next.js storefront does this via its `/api/ai/ws-token` route). Unauthenticated sockets are closed with code `4401`.
+## AI Shopping Assistant Protocol (WebSocket)
 
-Protocol (JSON frames):
+`ws://127.0.0.1:8000/ws/ai/chat/` is powered by **Django Channels** and **OpenRouter** with real-time token streaming.
+
+### Connection Authentication
+Clients authenticate via httpOnly `access_token` cookie or a short-lived query param ticket (`?token=<jwt>`). Unauthenticated connections are closed with code `4401`.
+
+### Frame Flow (JSON)
 
 ```
-client -> {"type": "chat", "message": "...", "history": [{"role": "user"|"assistant", "content": "..."}]}
+client -> {"type": "chat", "message": "...", "history": [{"role": "user"|"assistant", "content": "..."}], "context": {"current_page": "...", "current_product": {...}}}
 server <- {"type": "connected", "model": "...", "greeting": "..."}
 server <- {"type": "start", "model": "..."}
-server <- {"type": "token", "text": "..."}     (repeated, in order)
+server <- {"type": "token", "text": "..."}     (repeated tokens in stream)
 server <- {"type": "done"}
 server <- {"type": "error", "message": "..."}
 ```
 
-- Answers are grounded in the live product catalog (title, product_id, brand, price, stock, category).
-- Model is configurable via `OPEN_ROUTER_MODEL` (default `google/gemma-4-31b-it:free`) with automatic fallback to other free models if one is rate-limited upstream.
-- Every call is logged to `AICallLog` (provider `openrouter`) and visible in the Django admin.
+- Grounded in real database inventory (names, prices, discounts, stock levels).
+- Emits structured action triggers: `[[ACTION:THEME:dark]]`, `[[ACTION:FILTER:category=...]]`, `[[ACTION:ADD_TO_CART:<id>]]`, `[[ACTION:NAVIGATE:/checkout]]`.
+- Model fallback across candidates if upstream rate limits occur.
+- Audited in `AICallLog` records visible in Django admin.
 
-Quick browser test (from any page on the API origin):
-
-```js
-const socket = new WebSocket("ws://127.0.0.1:8000/ws/ai/chat/");
-socket.onmessage = (e) => console.log(JSON.parse(e.data));
-socket.onopen = () =>
-  socket.send(JSON.stringify({ type: "chat", message: "What lipsticks do you have?" }));
-```
-
+---
 
 ## Stripe Payments in Development
 
 1. Put your `sk_test_...` key in `.env` and restart the server.
 2. Checkout creates a session via `/shop/stripe/create-checkout-session/` and redirects the customer to Stripe.
-3. **Payment records are created by the webhook**, so forward Stripe events to your local server:
+3. Payment records are created by the webhook, so forward Stripe events to your local server:
 
    ```bash
    stripe login
@@ -188,63 +235,54 @@ socket.onopen = () =>
 
    | Card | Result |
    |---|---|
-   | `4242 4242 4242 4242` | ✅ Succeeds (any future expiry, any CVC) |
-   | `4000 0025 0000 3155` | ✅ Succeeds after 3D Secure |
-   | `4000 0000 0000 9995` | ❌ Declined (insufficient funds) |
+   | `4242 4242 4242 4242` | [Success] Succeeds (any future expiry, any CVC) |
+   | `4000 0025 0000 3155` | [Success] Succeeds after 3D Secure |
+   | `4000 0000 0000 9995` | [Declined] Declined (insufficient funds) |
 
-   Full list: https://docs.stripe.com/testing
+5. Verify in the admin: **Shop -> Payments** shows the payment linked to its order; **Shop -> Orders** shows `ordered=True` with the Stripe transaction ID.
 
-5. Verify in the admin: **Shop → Payments** shows the payment with a link to its order; **Shop → Orders** shows `ordered=True` and the Stripe transaction ID.
+---
 
-## Development
+## Development and Testing
 
-### Pre-commit hooks (black, isort, ruff)
+### Pre-commit Hooks (Black, isort, Ruff)
 
 ```bash
 uv run pre-commit install
 uv run pre-commit run --all-files
 ```
 
-### Tests
+### Automated Tests
 
 ```bash
 uv run pytest
 ```
 
-### CI
+### CI Pipeline
 
-A GitHub Actions pipeline (`.github/workflows/ci.yml`) runs linting, tests, and `pip-audit` on push.
+A GitHub Actions pipeline (`.github/workflows/ci.yml`) runs linting, testing, and security auditing (`pip-audit`) on push.
+
+---
 
 ## Architecture Decision Records
 
-Design decisions are documented in `docs/adr/`:
+Detailed architectural decisions are documented in `docs/adr/`:
 
 1. `0001-vendor-model.md` — Vendor model & multi-vendor support
-2. `0002-product-variants.md` — Product variants (sizes/colors)
-3. `0003-ai-gateway.md` — AI gateway (Groq)
-4. `0004-uuid-identifiers.md` — UUID identifiers
-5. `0005-postgresql-migration.md` — PostgreSQL migration
+2. `0002-product-variants.md` — Product variants (sizes and colors)
+3. `0003-ai-gateway.md` — AI gateway architecture
+4. `0004-uuid-identifiers.md` — Identifier strategies
+5. `0005-postgresql-migration.md` — PostgreSQL migration plan
 
-
+---
 
 ## Recent Changes
-- [x] Integrate AI Gateway (Groq) for dynamic text generation.
-- [x] Create Product Description Generator endpoint.
-- [x] Create Admin Triage Summary endpoint.
-- [x] Google Sign-In endpoint (`/accounts/user/google-login/`) with `google-auth`.
-- [x] Cart line-item detail endpoint (retrieve / update quantity / delete).
-- [x] Stripe Checkout session creation with per-request API key and webhook handler for payments.
-- [x] Absolute media URLs in serializers (cart/product images work from any origin).
-- [x] Admin dashboard improvements: payment ↔ order tracking, date drill-down, email/charge-ID search.
-- [x] Cookie-forwarding API proxy layer for the Next.js storefront (`/api/cart`, `/api/checkout`, `/api/auth/*`).
-- [x] AI Shopping Assistant over WebSockets: Django Channels + OpenRouter with streaming, catalog grounding, and model fallback.
-- Pinned dependencies and split requirements into base/dev/test (Phase 0 Step 1)
-- Added pre-commit (ruff, black, isort) and fixed lint baseline (Phase 0 Step 2)
-- Introduced pytest + factory_boy scaffolding with first smoke tests (Phase 0 Step 3)
-- Added GitHub Actions CI pipeline with linting, testing, and pip-audit (Phase 0 Step 4)
-- Hardened DEBUG and removed insecure SECRET_KEY fallback (Phase 0 Step 5)
-- Created Architecture Decision Records (ADRs) directory and first five ADRs (Phase 0 Step 6)
-- Enforced JWT rotation and blacklist, shortened token lifetimes (Phase 1 Step 7)
-- Hashed OTP storage with constant-time verification and enforced single-use (Phase 1 Step 8)
-- Added scoped rate throttling for auth, OTP, and anonymous browsing (Phase 1 Step 9)
-- Hardened production settings: HSTS, SSL redirect, secure cookies, and Swagger guard (Phase 1 Step 10)
+
+- [x] Redesigned Django Admin with pure light theme, product thumbnails, stock badges, star ratings, and inline editing.
+- [x] Removed dark theme stylesheets and theme toggle switch to maintain consistent light back-office UI.
+- [x] Scoped Content Security Policy (CSP) for `/admin/*` and `/docs/*` routes to eliminate inline style/script blocks.
+- [x] Added `SiteSetting` model, admin controls, and API endpoint for dynamic store hotline and announcements.
+- [x] Added `NewArrivalBanner` and `NewArrivalBannerImage` models, admin inlines, and REST APIs for multi-image sliders.
+- [x] Added `is_featured` and `is_bestselling` catalog query filters for storefront showcase sections.
+- [x] AI Shopping Assistant over WebSockets with Django Channels, OpenRouter streaming, and context extraction.
+- [x] Cookie-forwarding API proxy layer for Next.js storefront integration.

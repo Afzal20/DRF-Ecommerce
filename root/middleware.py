@@ -5,8 +5,8 @@ class SecurityHeadersMiddleware(MiddlewareMixin):
     """Set security headers for every response."""
 
     def process_response(self, request, response):
-        # Content Security Policy (allow inline styles/scripts for Django admin)
-        if request.path.startswith("/admin/"):
+        # Content Security Policy (allow inline styles/scripts for Django admin and Swagger docs)
+        if request.path.startswith("/admin/") or request.path.startswith("/docs/"):
             csp = (
                 "default-src 'self'; "
                 "img-src 'self' data:; "
