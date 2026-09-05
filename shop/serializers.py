@@ -14,6 +14,8 @@ from .models import (
     ItemImage,
     ItemSize,
     ItemType,
+    NewArrivalBanner,
+    NewArrivalBannerImage,
     Order,
     OrderItem,
     Payment,
@@ -166,3 +168,42 @@ class RatingSerilizers(serializers.ModelSerializer):
     class Meta:
         model = Rating
         fields = "__all__"
+
+
+class NewArrivalBannerImageSerializer(serializers.ModelSerializer):
+    final_image_url = serializers.ReadOnlyField()
+
+    class Meta:
+        model = NewArrivalBannerImage
+        fields = (
+            "id",
+            "image_name",
+            "image",
+            "image_url",
+            "final_image_url",
+            "link_url",
+            "order",
+            "is_active",
+        )
+
+
+class NewArrivalBannerSerializer(serializers.ModelSerializer):
+    images = serializers.SerializerMethodField()
+
+    class Meta:
+        model = NewArrivalBanner
+        fields = (
+            "id",
+            "title",
+            "subtitle",
+            "discount_percent",
+            "discount_text",
+            "is_active",
+            "images",
+        )
+
+    def get_images(self, obj):
+        active_images = obj.images.filter(is_active=True).order_by("order", "id")
+        return NewArrivalBannerImageSerializer(
+            active_images, many=True, context=self.context
+        ).data

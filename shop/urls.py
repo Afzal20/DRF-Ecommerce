@@ -17,6 +17,8 @@ from .views import (
     ItemSizeViews,
     ItemTypeViews,
     ItemViews,
+    NewArrivalBannerImageListView,
+    NewArrivalBannerView,
     OrderItemViews,
     OrderViews,
     PaymentViews,
@@ -55,4 +57,14 @@ urlpatterns = [
         name="stripe-create-checkout",
     ),
     path("stripe/webhook/", StripeWebhookView.as_view(), name="stripe-webhook"),
+    path(
+        "new-arrivals-banner/",
+        NewArrivalBannerView.as_view(),
+        name="new-arrivals-banner",
+    ),
+    path(
+        "new-arrivals-banner/images/",
+        NewArrivalBannerImageListView.as_view(),
+        name="new-arrivals-banner-images",
+    ),
 ]

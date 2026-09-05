@@ -269,3 +269,67 @@ class HeroSection(models.Model):
     button_1_Text = models.CharField(max_length=20)
     button_2_Text = models.CharField(max_length=20)
     image = models.ImageField(upload_to="HeroSection/")
+
+
+class NewArrivalBanner(models.Model):
+    title = models.CharField(max_length=200, default="NEW ARRIVALS")
+    subtitle = models.CharField(
+        max_length=300,
+        default="Curabitur luctus ipsum eget convallis",
+        blank=True,
+    )
+    discount_percent = models.CharField(max_length=50, default="50%", blank=True)
+    discount_text = models.CharField(
+        max_length=100, default="ON ALL PRODUCTS", blank=True
+    )
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "New Arrival Banner"
+        verbose_name_plural = "New Arrival Banners"
+
+    def __str__(self):
+        return self.title
+
+
+class NewArrivalBannerImage(models.Model):
+    banner = models.ForeignKey(
+        NewArrivalBanner,
+        related_name="images",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+    )
+    image_name = models.CharField(max_length=200, help_text="Image name or title")
+    image = models.ImageField(upload_to="banners/", null=True, blank=True)
+    image_url = models.URLField(
+        max_length=500,
+        blank=True,
+        null=True,
+        help_text="Optional external image URL if not uploaded directly",
+    )
+    link_url = models.CharField(
+        max_length=255,
+        blank=True,
+        default="/products",
+        help_text="Target URL when clicking this slide",
+    )
+    order = models.PositiveIntegerField(default=0)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["order", "id"]
+        verbose_name = "New Arrival Banner Image"
+        verbose_name_plural = "New Arrival Banner Images"
+
+    def __str__(self):
+        return self.image_name or f"Banner Image #{self.id}"
+
+    @property
+    def final_image_url(self):
+        if self.image:
+            return self.image.url
+        return self.image_url or ""

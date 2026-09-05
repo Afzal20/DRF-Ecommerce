@@ -16,6 +16,8 @@ from .models import (
     ItemImage,
     ItemSize,
     ItemType,
+    NewArrivalBanner,
+    NewArrivalBannerImage,
     Order,
     OrderItem,
     Payment,
@@ -39,6 +41,8 @@ from .serializers import (
     ItemSerilizers,
     ItemSizeSerilizers,
     ItemTypeSerilizers,
+    NewArrivalBannerImageSerializer,
+    NewArrivalBannerSerializer,
     OrderItemSerilizers,
     OrderSerilizers,
     PaymentSerilizers,
@@ -280,3 +284,50 @@ class OrderItemViews(generics.ListCreateAPIView):
 
     def get_queryset(self):
         return OrderItem.objects.filter(order__user=self.request.user)
+
+
+class NewArrivalBannerView(generics.RetrieveAPIView):
+    """
+    Returns the active New Arrivals Banner with its active images.
+    Auto-initializes the default banner and image if none exist.
+    """
+
+    permission_classes = [AllowAny]
+    serializer_class = NewArrivalBannerSerializer
+
+    def get_object(self):
+        banner = NewArrivalBanner.objects.filter(is_active=True).first()
+        if not banner:
+            banner, _ = NewArrivalBanner.objects.get_or_create(
+                id=1,
+                defaults={
+                    "title": "NEW ARRIVALS",
+                    "subtitle": "Curabitur luctus ipsum eget convallis",
+                    "discount_percent": "50%",
+                    "discount_text": "ON ALL PRODUCTS",
+                    "is_active": True,
+                },
+            )
+            if not banner.images.exists():
+                NewArrivalBannerImage.objects.create(
+                    banner=banner,
+                    image_name="Modern Tablet and Gadget Showcase",
+                    image_url="https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?q=80&w=2027&auto=format&fit=crop",
+                    order=0,
+                    is_active=True,
+                )
+        return banner
+
+
+class NewArrivalBannerImageListView(generics.ListAPIView):
+    """
+    Returns all active images for the New Arrivals Banner.
+    """
+
+    permission_classes = [AllowAny]
+    serializer_class = NewArrivalBannerImageSerializer
+
+    def get_queryset(self):
+        return NewArrivalBannerImage.objects.filter(is_active=True).order_by(
+            "order", "id"
+        )

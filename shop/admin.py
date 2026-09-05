@@ -15,6 +15,8 @@ from .models import (
     ItemImage,
     ItemSize,
     ItemType,
+    NewArrivalBanner,
+    NewArrivalBannerImage,
     Order,
     OrderItem,
     Payment,
@@ -214,3 +216,30 @@ admin.site.register(Payment, PaymentAdmin)
 admin.site.register(Coupon, CouponAdmin)
 admin.site.register(Refund, RefundAdmin)
 admin.site.register(ContactMessage)
+
+
+class NewArrivalBannerImageInline(admin.TabularInline):
+    model = NewArrivalBannerImage
+    extra = 1
+    fields = ("image_name", "image", "image_url", "link_url", "order", "is_active")
+
+
+@admin.register(NewArrivalBanner)
+class NewArrivalBannerAdmin(admin.ModelAdmin):
+    list_display = (
+        "title",
+        "discount_percent",
+        "discount_text",
+        "is_active",
+        "updated_at",
+    )
+    list_editable = ("is_active",)
+    inlines = [NewArrivalBannerImageInline]
+
+
+@admin.register(NewArrivalBannerImage)
+class NewArrivalBannerImageAdmin(admin.ModelAdmin):
+    list_display = ("image_name", "banner", "order", "is_active", "created_at")
+    list_filter = ("is_active", "banner")
+    list_editable = ("order", "is_active")
+    search_fields = ("image_name",)
