@@ -1,16 +1,33 @@
 {% extends 'admin/base.html' %}
 {% load static %}
 
+{% block dark-mode-vars %}{# Suppress dark_mode.css and theme.js to enforce light mode only #}{% endblock %}
+
 {% block extrahead %}{{ block.super }}
+<meta name="color-scheme" content="light">
+<script>
+  try {
+    localStorage.setItem('theme', 'light');
+    document.documentElement.setAttribute('data-theme', 'light');
+  } catch (e) {}
+</script>
 <link rel="stylesheet" href="{% static 'admin/css/ecommerce-admin.css' %}">
 <style>
-  :root {
-    --primary: #2563eb;
-    --secondary: #ffffff;
-    --accent: #0f172a;
+  :root, html, body {
+    color-scheme: light !important;
+    --primary: #417690;
+    --secondary: #2c607a;
+    --accent: #f5dd5d;
     --primary-fg: #ffffff; 
-    --header-color: #1e293b; 
-    --darkened-bg: #0f172a;
+    --header-color: #f5dd5d; 
+    --header-bg: #417690;
+    --body-bg: #f8fafc;
+    --body-fg: #0f172a;
+    --breadcrumbs-bg: #2b556b;
+    --breadcrumbs-fg: #c4dce8;
+    --breadcrumbs-link-fg: #ffffff;
+    --darkened-bg: #f1f5f9;
+    --selected-bg: #e2e8f0;
   }
 </style>
 {% endblock %}

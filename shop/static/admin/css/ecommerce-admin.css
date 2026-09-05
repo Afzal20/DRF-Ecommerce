@@ -2,20 +2,29 @@
    E-COMMERCE ADMIN PANEL - MODERN UI STYLESHEET
    ========================================================================== */
 
-:root {
-  --primary: #1c9cf0;
-  --primary-hover: #0b82cf;
+:root,
+html,
+body,
+html[data-theme="dark"],
+html[data-theme="auto"],
+html[data-theme="light"] {
+  color-scheme: light !important;
+  --primary: #417690;
+  --primary-hover: #336177;
   --secondary: #ffffff;
-  --accent: #0f172a;
+  --accent: #f5dd5d;
   --primary-fg: #ffffff;
-  --header-color: #1e293b;
-  --body-bg: #f8fafc;
-  --card-bg: #ffffff;
-  --border-color: #e2e8f0;
+  --header-color: #f5dd5d;
+  --header-bg: #417690;
+  --body-bg: #f8fafc !important;
+  --body-fg: #0f172a !important;
+  --card-bg: #ffffff !important;
+  --border-color: #e2e8f0 !important;
   --border-focus: #3b82f6;
-  --text-primary: #0f172a;
-  --text-secondary: #475569;
-  --text-muted: #94a3b8;
+  --text-primary: #0f172a !important;
+  --text-secondary: #475569 !important;
+  --text-muted: #94a3b8 !important;
+  --darkened-bg: #f1f5f9 !important;
   --success: #16a34a;
   --warning: #d97706;
   --danger: #dc2626;
@@ -27,68 +36,94 @@
   --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.04);
 }
 
+/* Strictly remove theme toggle switch */
+.theme-toggle,
+button.theme-toggle,
+#user-tools .theme-toggle {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
 /* Base & Typography */
 body {
-  background-color: var(--body-bg);
-  color: var(--text-primary);
+  background-color: var(--body-bg) !important;
+  color: var(--text-primary) !important;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   font-size: 13.5px;
   line-height: 1.5;
 }
 
-/* Header & Navigation */
+/* Header & Navigation (Light Theme - Classic Admin Structure) */
 #header {
-  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-  border-bottom: 1px solid #334155;
-  box-shadow: var(--shadow-md);
-  padding: 12px 24px;
+  background: #417690;
+  border-bottom: 1px solid #336177;
+  box-shadow: var(--shadow-sm);
+  padding: 14px 28px;
 }
 
 #header #branding h1 {
-  font-size: 18px;
-  font-weight: 800;
-  letter-spacing: -0.02em;
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  margin: 0;
 }
 
 #header #branding h1 a:link, #header #branding h1 a:visited {
-  color: #ffffff;
+  color: #f5dd5d;
 }
 
 #user-tools {
   font-size: 12px;
-  color: #cbd5e1;
+  color: #e0f2fe;
 }
 
 #user-tools a {
-  color: #93c5fd;
+  color: #ffffff;
   font-weight: 600;
   transition: color 0.15s;
 }
 
 #user-tools a:hover {
+  color: #f5dd5d;
+  text-decoration: underline;
+}
+
+#user-tools form button {
+  background: transparent;
+  border: none;
   color: #ffffff;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+  font-size: 12px;
+  transition: color 0.15s;
+}
+
+#user-tools form button:hover {
+  color: #f5dd5d;
   text-decoration: underline;
 }
 
 /* Breadcrumbs */
 div.breadcrumbs {
-  background: #ffffff;
-  border-bottom: 1px solid var(--border-color);
-  padding: 12px 28px;
+  background: #2b556b;
+  border-bottom: 1px solid #204153;
+  padding: 10px 28px;
   font-size: 12.5px;
   font-weight: 500;
-  color: var(--text-muted);
+  color: #c4dce8;
   box-shadow: var(--shadow-sm);
 }
 
 div.breadcrumbs a {
-  color: #2563eb;
+  color: #ffffff;
   font-weight: 600;
   text-decoration: none;
 }
 
 div.breadcrumbs a:hover {
-  color: #1d4ed8;
+  color: #f5dd5d;
   text-decoration: underline;
 }
 
@@ -684,3 +719,26 @@ fieldset.module h2 {
   background: #fecaca !important;
   color: #991b1b !important;
 }
+
+/* Strictly enforce light theme even if OS/browser prefers dark */
+@media (prefers-color-scheme: dark) {
+  :root,
+  html,
+  body,
+  html[data-theme="dark"],
+  html[data-theme="auto"] {
+    color-scheme: light !important;
+    --body-bg: #f8fafc !important;
+    --body-fg: #0f172a !important;
+    --card-bg: #ffffff !important;
+    --border-color: #e2e8f0 !important;
+    --border-focus: #3b82f6 !important;
+    --text-primary: #0f172a !important;
+    --text-secondary: #475569 !important;
+    --text-muted: #94a3b8 !important;
+    --darkened-bg: #f1f5f9 !important;
+    background-color: #f8fafc !important;
+    color: #0f172a !important;
+  }
+}
+
