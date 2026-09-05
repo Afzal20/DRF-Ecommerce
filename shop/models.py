@@ -134,7 +134,7 @@ class BillingAddress(models.Model):
     zip = models.CharField(max_length=100)
 
     def __str__(self):
-        return self.user.username
+        return f"{self.user.email}"
 
 
 class Payment(models.Model):

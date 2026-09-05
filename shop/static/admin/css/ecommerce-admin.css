@@ -1,8 +1,686 @@
+/* ==========================================================================
+   E-COMMERCE ADMIN PANEL - MODERN UI STYLESHEET
+   ========================================================================== */
+
 :root {
   --primary: #1c9cf0;
+  --primary-hover: #0b82cf;
   --secondary: #ffffff;
-  --accent: #061622;
+  --accent: #0f172a;
   --primary-fg: #ffffff;
-  --header-color: #22303c;
-  --darkened-bg: #000000;
+  --header-color: #1e293b;
+  --body-bg: #f8fafc;
+  --card-bg: #ffffff;
+  --border-color: #e2e8f0;
+  --border-focus: #3b82f6;
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #94a3b8;
+  --success: #16a34a;
+  --warning: #d97706;
+  --danger: #dc2626;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.04);
+}
+
+/* Base & Typography */
+body {
+  background-color: var(--body-bg);
+  color: var(--text-primary);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-size: 13.5px;
+  line-height: 1.5;
+}
+
+/* Header & Navigation */
+#header {
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  border-bottom: 1px solid #334155;
+  box-shadow: var(--shadow-md);
+  padding: 12px 24px;
+}
+
+#header #branding h1 {
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+#header #branding h1 a:link, #header #branding h1 a:visited {
+  color: #ffffff;
+}
+
+#user-tools {
+  font-size: 12px;
+  color: #cbd5e1;
+}
+
+#user-tools a {
+  color: #93c5fd;
+  font-weight: 600;
+  transition: color 0.15s;
+}
+
+#user-tools a:hover {
+  color: #ffffff;
+  text-decoration: underline;
+}
+
+/* Breadcrumbs */
+div.breadcrumbs {
+  background: #ffffff;
+  border-bottom: 1px solid var(--border-color);
+  padding: 12px 28px;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--text-muted);
+  box-shadow: var(--shadow-sm);
+}
+
+div.breadcrumbs a {
+  color: #2563eb;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+div.breadcrumbs a:hover {
+  color: #1d4ed8;
+  text-decoration: underline;
+}
+
+/* Main Content Container */
+#content {
+  padding: 18px 20px;
+  max-width: 100%;
+  margin: 0;
+  box-sizing: border-box;
+}
+
+#content h1 {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+  margin-bottom: 14px;
+}
+
+/* Object Tools (Add Buttons) */
+.object-tools {
+  margin-bottom: 14px;
+}
+
+.object-tools li a {
+  border-radius: var(--radius-sm);
+  font-weight: 700;
+  font-size: 11.5px;
+  letter-spacing: 0.02em;
+  padding: 7px 14px;
+  text-transform: uppercase;
+  transition: all 0.15s ease;
+  box-shadow: var(--shadow-sm);
+}
+
+.object-tools li a.addlink {
+  background: #16a34a !important;
+  color: #ffffff !important;
+}
+
+.object-tools li a.addlink:hover {
+  background: #15803d !important;
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
+}
+
+/* ==========================================================================
+   CHANGELIST (LIST VIEW) REDESIGN
+   ========================================================================== */
+
+#changelist {
+  display: flex;
+  flex-direction: row-reverse;
+  align-items: flex-start;
+  gap: 16px;
+  width: 100%;
+}
+
+#changelist #changelist-form {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+
+/* Search Toolbar */
+#toolbar {
+  background: transparent;
+  border: none;
+  padding: 0;
+  margin-bottom: 14px;
+}
+
+#toolbar form#changelist-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--card-bg);
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-sm);
+}
+
+#toolbar form#changelist-search #searchbar {
+  flex: 1;
+  max-width: 380px;
+  border: 1px solid #cbd5e1;
+  border-radius: var(--radius-sm);
+  padding: 7px 12px;
+  font-size: 12.5px;
+  background: #ffffff;
+  color: var(--text-primary);
+  transition: all 0.2s ease;
+}
+
+#toolbar form#changelist-search #searchbar:focus {
+  outline: none;
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+#toolbar form#changelist-search input[type="submit"] {
+  background: #2563eb;
+  color: #ffffff;
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 7px 16px;
+  font-weight: 700;
+  font-size: 12.5px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+#toolbar form#changelist-search input[type="submit"]:hover {
+  background: #1d4ed8;
+}
+
+/* Actions Bar */
+#changelist .actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--card-bg);
+  padding: 8px 14px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+  margin-bottom: 14px;
+  box-shadow: var(--shadow-sm);
+  font-size: 12.5px;
+  color: var(--text-secondary);
+}
+
+#changelist .actions label {
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+#changelist .actions select {
+  border: 1px solid #cbd5e1;
+  border-radius: var(--radius-sm);
+  padding: 5px 10px;
+  font-size: 12.5px;
+  background: #ffffff;
+  color: var(--text-primary);
+}
+
+#changelist .actions select:focus {
+  outline: none;
+  border-color: var(--border-focus);
+}
+
+#changelist .actions button.button {
+  background: #334155;
+  color: #ffffff;
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 5px 14px;
+  font-weight: 700;
+  font-size: 11.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+#changelist .actions button.button:hover {
+  background: #1e293b;
+}
+
+#changelist .actions .action-counter {
+  margin-left: auto;
+  font-weight: 600;
+  color: var(--text-muted);
+  font-size: 11.5px;
+}
+
+/* Results Table Container */
+#changelist .results {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  overflow-x: auto;
+  margin-bottom: 14px;
+}
+
+#result_list {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+/* Header Cells */
+#result_list thead th {
+  background: #f8fafc;
+  color: #475569;
+  font-size: 10.5px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 10px 10px;
+  border-bottom: 2px solid var(--border-color);
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+#result_list thead th.sorted {
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+#result_list thead th a {
+  color: inherit;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+#result_list thead th a:hover {
+  color: #0f172a;
+}
+
+/* Body Cells */
+#result_list tbody tr {
+  transition: background-color 0.12s ease;
+}
+
+#result_list tbody tr:nth-child(even) {
+  background-color: #fafbfc;
+}
+
+#result_list tbody tr:hover {
+  background-color: #f1f5f9;
+}
+
+#result_list tbody tr.selected {
+  background-color: #e0f2fe;
+}
+
+#result_list tbody td,
+#result_list tbody th {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--border-color);
+  vertical-align: middle;
+  font-size: 12.5px;
+  color: var(--text-primary);
+}
+
+#result_list tbody th a {
+  font-weight: 700;
+  color: #0f172a;
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+#result_list tbody th a:hover {
+  color: #2563eb;
+}
+
+/* Checkboxes */
+#result_list .action-checkbox {
+  width: 32px;
+  text-align: center;
+  padding: 8px 6px;
+}
+
+#result_list input[type="checkbox"] {
+  width: 15px;
+  height: 15px;
+  accent-color: #2563eb;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+/* In-table Editable Inputs (list_editable) */
+#result_list input[type="text"],
+#result_list input[type="number"],
+#result_list select {
+  border: 1px solid #cbd5e1;
+  border-radius: var(--radius-sm);
+  padding: 4px 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #0f172a;
+  background: #ffffff;
+  transition: all 0.15s ease;
+  width: 68px;
+  max-width: 75px;
+}
+
+#result_list input[type="text"]:focus,
+#result_list input[type="number"]:focus,
+#result_list select:focus {
+  outline: none;
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+/* Filter Sidebar */
+#changelist-filter {
+  width: 200px;
+  flex-shrink: 0;
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 14px 12px;
+  box-shadow: var(--shadow-md);
+  position: sticky;
+  top: 16px;
+}
+
+#changelist-filter h2 {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--text-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding-bottom: 8px;
+  margin-top: 0;
+  margin-bottom: 10px;
+  border-bottom: 2px solid var(--border-color);
+}
+
+#changelist-filter h3 {
+  font-size: 11px;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin: 12px 0 4px 0;
+}
+
+#changelist-filter ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+#changelist-filter li {
+  margin-bottom: 2px;
+}
+
+#changelist-filter li a {
+  display: block;
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: 500;
+  transition: all 0.15s ease;
+}
+
+#changelist-filter li a:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+}
+
+#changelist-filter li.selected a {
+  background: #eff6ff;
+  color: #1d4ed8;
+  font-weight: 700;
+}
+
+/* Pagination */
+.paginator {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 12px 18px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: var(--shadow-sm);
+  margin-top: 14px;
+}
+
+.paginator a:link, .paginator a:visited {
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  color: var(--text-primary);
+  text-decoration: none;
+  font-weight: 600;
+  transition: all 0.15s ease;
+}
+
+.paginator a:hover {
+  background: #f1f5f9;
+  border-color: #94a3b8;
+}
+
+.paginator .this-page {
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  background: #2563eb;
+  color: #ffffff;
+  font-weight: 700;
+}
+
+/* ==========================================================================
+   CHANGE FORM (EDIT VIEW) REDESIGN
+   ========================================================================== */
+
+fieldset.module {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: 22px 24px;
+  margin-bottom: 24px;
+}
+
+fieldset.module h2 {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
+  padding-bottom: 12px;
+  margin-top: 0;
+  margin-bottom: 18px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.form-row {
+  padding: 12px 0;
+  border-bottom: 1px solid #f1f5f9;
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+}
+
+.form-row:last-child {
+  border-bottom: none;
+}
+
+.form-row label {
+  width: 180px;
+  flex-shrink: 0;
+  font-weight: 600;
+  font-size: 13px;
+  color: #334155;
+  padding-top: 6px;
+}
+
+.form-row label.required {
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.form-row input[type="text"],
+.form-row input[type="password"],
+.form-row input[type="email"],
+.form-row input[type="url"],
+.form-row input[type="number"],
+.form-row select,
+.form-row textarea {
+  border: 1px solid #cbd5e1;
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+  font-size: 13.5px;
+  color: var(--text-primary);
+  background: #ffffff;
+  width: 100%;
+  max-width: 580px;
+  transition: all 0.15s ease;
+}
+
+.form-row input:focus,
+.form-row select:focus,
+.form-row textarea:focus {
+  outline: none;
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+.form-row .help {
+  font-size: 11.5px;
+  color: var(--text-muted);
+  margin-top: 6px;
+}
+
+/* Inlines (e.g. Item Images, Colors, Sizes) */
+.inline-group {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: 20px;
+  margin-bottom: 24px;
+}
+
+.inline-group h2 {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 10px;
+  margin-top: 0;
+  margin-bottom: 16px;
+}
+
+.tabular table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.tabular thead th {
+  background: #f8fafc;
+  font-size: 11px;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.tabular tbody td {
+  padding: 10px 12px;
+  border-bottom: 1px solid #f1f5f9;
+  vertical-align: middle;
+}
+
+/* Sticky Submit Bar */
+.submit-row {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 14px 20px;
+  box-shadow: var(--shadow-lg);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  position: sticky;
+  bottom: 20px;
+  z-index: 100;
+  margin-top: 24px;
+}
+
+.submit-row input[type="submit"] {
+  border-radius: var(--radius-sm);
+  padding: 9px 20px;
+  font-weight: 700;
+  font-size: 12.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.submit-row input[type="submit"].default {
+  background: #2563eb !important;
+  color: #ffffff !important;
+  box-shadow: var(--shadow-sm);
+}
+
+.submit-row input[type="submit"].default:hover {
+  background: #1d4ed8 !important;
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
+}
+
+.submit-row input[type="submit"]:not(.default) {
+  background: #f1f5f9;
+  color: #334155;
+  border: 1px solid #cbd5e1;
+}
+
+.submit-row input[type="submit"]:not(.default):hover {
+  background: #e2e8f0;
+}
+
+.submit-row .deletelink-box a.deletelink {
+  background: #fee2e2 !important;
+  color: #b91c1c !important;
+  border: 1px solid #fecaca;
+  border-radius: var(--radius-sm);
+  padding: 8px 16px;
+  font-size: 12px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: all 0.15s ease;
+}
+
+.submit-row .deletelink-box a.deletelink:hover {
+  background: #fecaca !important;
+  color: #991b1b !important;
 }
