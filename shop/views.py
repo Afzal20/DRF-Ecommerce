@@ -1,3 +1,4 @@
+from django.db.models import Q
 from rest_framework import generics
 from rest_framework.permissions import AllowAny, IsAdminUser, IsAuthenticated
 
@@ -83,6 +84,28 @@ class ItemViews(generics.ListAPIView):
                 queryset = queryset.filter(is_bestselling=True)
             elif is_bestselling.lower() in ["false", "0"]:
                 queryset = queryset.filter(is_bestselling=False)
+
+        search = self.request.query_params.get("search", None)
+        if search:
+            queryset = queryset.filter(
+                Q(title__icontains=search)
+                | Q(description__icontains=search)
+                | Q(brand_name__icontains=search)
+            )
+
+        min_price = self.request.query_params.get("min_price", None)
+        if min_price is not None:
+            try:
+                queryset = queryset.filter(price__gte=int(min_price))
+            except (ValueError, TypeError):
+                pass
+
+        max_price = self.request.query_params.get("max_price", None)
+        if max_price is not None:
+            try:
+                queryset = queryset.filter(price__lte=int(max_price))
+            except (ValueError, TypeError):
+                pass
 
         limit = self.request.query_params.get("limit", None)
         if limit is not None:

@@ -76,6 +76,25 @@ class ShoppingAssistantConsumer(AsyncJsonWebsocketConsumer):
         catalog = await database_sync_to_async(build_catalog)()
         system_prompt = SHOPPING_ASSISTANT_SYSTEM_PROMPT.format(catalog=catalog)
 
+        context = content.get("context")
+        if isinstance(context, dict):
+            ctx_lines = []
+            current_page = context.get("current_page")
+            if current_page:
+                ctx_lines.append(f"User is currently viewing page: {current_page}")
+            current_product = context.get("current_product")
+            if isinstance(current_product, dict):
+                p_id = current_product.get("id")
+                p_title = current_product.get("title")
+                p_price = current_product.get("price")
+                ctx_lines.append(
+                    f"Current active product on screen: [#{p_id}] {p_title} (price: ${p_price})"
+                )
+            if ctx_lines:
+                system_prompt += "\n\nCurrent User Browser Context:\n" + "\n".join(
+                    ctx_lines
+                )
+
         messages = [{"role": "system", "content": system_prompt}, *history]
         messages.append({"role": "user", "content": message})
 

@@ -25,23 +25,35 @@ FALLBACK_MODELS = [
     "nvidia/nemotron-3-super-120b-a12b:free",
 ]
 
-SHOPPING_ASSISTANT_SYSTEM_PROMPT = """You are "ShopMate", the friendly shopping \
-assistant for an online cosmetics & beauty store.
+SHOPPING_ASSISTANT_SYSTEM_PROMPT = """You are "ShopMate", the friendly and \
+intelligent shopping assistant for our online multi-vendor marketplace.
 
-Your job is to help visitors:
-- discover products that match their needs, skin type, or budget,
-- answer questions about prices, discounts, availability and brands,
-- give short, honest product comparisons and buying advice,
-- guide them through cart, checkout and delivery questions generally.
+Your capabilities:
+1. Product & Price Inquiries:
+- Help visitors discover products matching their needs, preferences, or budget.
+- Answer questions about prices, discounts, availability, categories, and brands.
+- Recommend specific products by name (and product ID).
+- Compare products and highlight active sales and deals.
+
+2. Interactive Frontend Actions:
+When the user asks you to perform an action on the site, provide a helpful explanation AND append the corresponding machine-readable action tag at the very end of your response:
+- Change theme to dark: [[ACTION:THEME:dark]]
+- Change theme to light: [[ACTION:THEME:light]]
+- Filter products by category: [[ACTION:FILTER:category=CategoryName]] (e.g. [[ACTION:FILTER:category=Laptops]], [[ACTION:FILTER:category=Beauty]], [[ACTION:FILTER:category=Smartphones]])
+- Filter or search products by keyword: [[ACTION:FILTER:search=keyword]]
+- Add current product to cart: [[ACTION:ADD_TO_CART:current]]
+- Add specific product to cart: [[ACTION:ADD_TO_CART:productId]]
+- Go to cart: [[ACTION:NAVIGATE:/cart]]
+- Proceed to checkout: [[ACTION:NAVIGATE:/checkout]]
+- View specific product: [[ACTION:NAVIGATE:/products/productId]]
 
 Guidelines:
-- Base product claims ONLY on the catalog provided below. If something is not \
-in the catalog, say you are not sure instead of inventing products or prices.
-- Prices are in the store's base currency, no currency conversion.
-- Keep answers concise and conversational (2-6 short paragraphs max).
-- Recommend specific products by name (and product_id) when relevant.
+- Base product details strictly on the catalog and available store context provided below.
+- Prices are in dollars ($).
+- Keep answers concise, conversational, and direct (1-3 paragraphs max).
+- Only include an action tag when the user requests an action (changing theme, filtering, adding to cart, checking out).
 
-Here is the current product catalog (may be a subset):
+Here is the current product catalog:
 {catalog}
 """
 
@@ -76,7 +88,7 @@ def _client() -> AsyncOpenAI:
     return AsyncOpenAI(base_url=OPENROUTER_BASE_URL, api_key=_api_key())
 
 
-def build_catalog(limit: int = 25) -> str:
+def build_catalog(limit: int = 50) -> str:
     """
     Builds a compact text summary of the live product catalog to ground the
     assistant's answers. Synchronous (call via database_sync_to_async).
@@ -90,18 +102,20 @@ def build_catalog(limit: int = 25) -> str:
     lines = []
     for item in items:
         price = item.discount_price or item.price
+        category_name = item.category.name if item.category else "General"
         line = (
-            f"- {item.title} (id: {item.product_id}) | {item.brand_name}"
-            f" | price: {price}"
+            f"- [#{item.id}] {item.title} (code: {item.product_id}) | brand: {item.brand_name}"
+            f" | price: ${price}"
         )
         if item.discount_price:
-            line += f" (was {item.price}, on sale!)"
-        if item.category:
-            line += f" | category: {item.category}"
+            line += f" (was ${item.price}, on sale!)"
+        line += f" | category: {category_name}"
         if item.type:
             line += f" | type: {item.type}"
         if item.number_of_items <= 0:
             line += " | OUT OF STOCK"
+        else:
+            line += f" | stock: {item.number_of_items}"
         lines.append(line)
 
     if not lines:
