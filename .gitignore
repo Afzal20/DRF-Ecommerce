@@ -17,3 +17,5 @@ media/
 TRANSFORMATION_PLAN.md
 NEXTJS_UI_PLAN.md
 .env
+.coverage
+.pytest_cache/
