@@ -52,6 +52,8 @@ class GoogleLoginSerializer(serializers.Serializer):
 
 # create a custom user profile serializer
 class UserProfileSerializer(serializers.ModelSerializer):
+    email = serializers.EmailField(source="user.email", read_only=True)
+
     class Meta:
         model = UserProfile
         fields = "__all__"
