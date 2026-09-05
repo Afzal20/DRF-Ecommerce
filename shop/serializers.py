@@ -21,6 +21,7 @@ from .models import (
     Payment,
     Rating,
     Refund,
+    SiteSetting,
     Size,
     Slider,
 )
@@ -207,3 +208,17 @@ class NewArrivalBannerSerializer(serializers.ModelSerializer):
         return NewArrivalBannerImageSerializer(
             active_images, many=True, context=self.context
         ).data
+
+
+class SiteSettingSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SiteSetting
+        fields = (
+            "id",
+            "site_name",
+            "hotline_label",
+            "hotline_number",
+            "announcement_badge",
+            "announcement_text",
+            "is_active",
+        )

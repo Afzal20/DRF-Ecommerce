@@ -333,3 +333,31 @@ class NewArrivalBannerImage(models.Model):
         if self.image:
             return self.image.url
         return self.image_url or ""
+
+
+class SiteSetting(models.Model):
+    site_name = models.CharField(max_length=100, default="MAXSHOP", blank=True)
+    hotline_label = models.CharField(
+        max_length=50, default="HOTLINE:", help_text="Hotline title/label"
+    )
+    hotline_number = models.CharField(
+        max_length=100,
+        default="(801) 2345 - 6789",
+        help_text="Customer service hotline phone number",
+    )
+    announcement_badge = models.CharField(
+        max_length=50, default="This Week", blank=True
+    )
+    announcement_text = models.CharField(
+        max_length=255, default="Maecenas faucibus mollis", blank=True
+    )
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Site Setting"
+        verbose_name_plural = "Site Settings"
+
+    def __str__(self):
+        return f"{self.site_name} - {self.hotline_label} {self.hotline_number}"

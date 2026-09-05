@@ -22,6 +22,7 @@ from .models import (
     Payment,
     Rating,
     Refund,
+    SiteSetting,
     Size,
     Slider,
     Vendor,
@@ -243,3 +244,18 @@ class NewArrivalBannerImageAdmin(admin.ModelAdmin):
     list_filter = ("is_active", "banner")
     list_editable = ("order", "is_active")
     search_fields = ("image_name",)
+
+
+@admin.register(SiteSetting)
+class SiteSettingAdmin(admin.ModelAdmin):
+    list_display = (
+        "site_name",
+        "hotline_label",
+        "hotline_number",
+        "announcement_badge",
+        "announcement_text",
+        "is_active",
+        "updated_at",
+    )
+    list_editable = ("hotline_label", "hotline_number", "is_active")
+    search_fields = ("site_name", "hotline_number")

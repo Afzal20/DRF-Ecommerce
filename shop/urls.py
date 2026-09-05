@@ -24,6 +24,7 @@ from .views import (
     PaymentViews,
     RatingViews,
     RefundViews,
+    SiteSettingView,
     SizeViews,
     SliderViews,
 )
@@ -66,5 +67,10 @@ urlpatterns = [
         "new-arrivals-banner/images/",
         NewArrivalBannerImageListView.as_view(),
         name="new-arrivals-banner-images",
+    ),
+    path(
+        "site-settings/",
+        SiteSettingView.as_view(),
+        name="site-settings",
     ),
 ]

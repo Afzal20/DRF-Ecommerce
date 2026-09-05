@@ -23,6 +23,7 @@ from .models import (
     Payment,
     Rating,
     Refund,
+    SiteSetting,
     Size,
     Slider,
 )
@@ -48,6 +49,7 @@ from .serializers import (
     PaymentSerilizers,
     RatingSerilizers,
     RefundSerilizers,
+    SiteSettingSerializer,
     SizeSerilizers,
     SliderSerilizers,
 )
@@ -331,3 +333,29 @@ class NewArrivalBannerImageListView(generics.ListAPIView):
         return NewArrivalBannerImage.objects.filter(is_active=True).order_by(
             "order", "id"
         )
+
+
+class SiteSettingView(generics.RetrieveAPIView):
+    """
+    Returns active site settings (hotline, site name, announcement).
+    Auto-initializes defaults if none exist in the database.
+    """
+
+    permission_classes = [AllowAny]
+    serializer_class = SiteSettingSerializer
+
+    def get_object(self):
+        setting = SiteSetting.objects.filter(is_active=True).first()
+        if not setting:
+            setting, _ = SiteSetting.objects.get_or_create(
+                id=1,
+                defaults={
+                    "site_name": "MAXSHOP",
+                    "hotline_label": "HOTLINE:",
+                    "hotline_number": "(801) 2345 - 6789",
+                    "announcement_badge": "This Week",
+                    "announcement_text": "Maecenas faucibus mollis",
+                    "is_active": True,
+                },
+            )
+        return setting
