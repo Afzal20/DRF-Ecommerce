@@ -61,6 +61,7 @@ class ItemAdmin(admin.ModelAdmin):
         "description",
         "vendor",
         "is_featured",
+        "is_bestselling",
     ]
 
     def get_first_image_url(self, obj):

@@ -70,6 +70,20 @@ class ItemViews(generics.ListAPIView):
             else:
                 queryset = queryset.filter(category__name__iexact=category)
 
+        is_featured = self.request.query_params.get("is_featured", None)
+        if is_featured is not None:
+            if is_featured.lower() in ["true", "1"]:
+                queryset = queryset.filter(is_featured=True)
+            elif is_featured.lower() in ["false", "0"]:
+                queryset = queryset.filter(is_featured=False)
+
+        is_bestselling = self.request.query_params.get("is_bestselling", None)
+        if is_bestselling is not None:
+            if is_bestselling.lower() in ["true", "1"]:
+                queryset = queryset.filter(is_bestselling=True)
+            elif is_bestselling.lower() in ["false", "0"]:
+                queryset = queryset.filter(is_bestselling=False)
+
         limit = self.request.query_params.get("limit", None)
         if limit is not None:
             try:
