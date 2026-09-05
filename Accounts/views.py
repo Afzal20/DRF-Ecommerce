@@ -2,7 +2,7 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
-from rest_framework import generics, permissions, status
+from rest_framework import generics, permissions, status, throttling
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -33,6 +33,7 @@ class UserRegistrationView(generics.CreateAPIView):
 
     serializer_class = UserRegistratioinSerializer
     permission_classes = [permissions.AllowAny]
+    throttle_classes = [throttling.ScopedRateThrottle]
     throttle_scope = "auth"
 
     def post(self, request, *args, **kwargs):
@@ -56,6 +57,7 @@ class UserRegistrationView(generics.CreateAPIView):
 @method_decorator(csrf_exempt, name="dispatch")
 class UserLoginView(APIView):
     permission_classes = [permissions.AllowAny]
+    throttle_classes = [throttling.ScopedRateThrottle]
     throttle_scope = "auth"
 
     @swagger_auto_schema(
