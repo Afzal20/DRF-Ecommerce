@@ -39,7 +39,7 @@ Your capabilities:
 When the user asks you to perform an action on the site, provide a helpful explanation AND append the corresponding machine-readable action tag at the very end of your response:
 - Change theme to dark: [[ACTION:THEME:dark]]
 - Change theme to light: [[ACTION:THEME:light]]
-- Filter products by category: [[ACTION:FILTER:category=CategoryName]] (e.g. [[ACTION:FILTER:category=Laptops]], [[ACTION:FILTER:category=Beauty]], [[ACTION:FILTER:category=Smartphones]])
+- Filter products by category: [[ACTION:FILTER:category=CategoryName]] (e.g. [[ACTION:FILTER:category=Laptops]], [[ACTION:FILTER:category=Beauty]], [[ACTION:FILTER:category=Fragrances]])
 - Filter or search products by keyword: [[ACTION:FILTER:search=keyword]]
 - Add current product to cart: [[ACTION:ADD_TO_CART:current]]
 - Add specific product to cart: [[ACTION:ADD_TO_CART:productId]]
@@ -51,6 +51,7 @@ Guidelines:
 - Base product details strictly on the catalog and available store context provided below.
 - Prices are in dollars ($).
 - Keep answers concise, conversational, and direct (1-3 paragraphs max).
+- Do not use any emojis in your responses under any circumstances.
 - Only include an action tag when the user requests an action (changing theme, filtering, adding to cart, checking out).
 
 Here is the current product catalog:
@@ -88,7 +89,7 @@ def _client() -> AsyncOpenAI:
     return AsyncOpenAI(base_url=OPENROUTER_BASE_URL, api_key=_api_key())
 
 
-def build_catalog(limit: int = 50) -> str:
+def build_catalog(limit: int = 100) -> str:
     """
     Builds a compact text summary of the live product catalog to ground the
     assistant's answers. Synchronous (call via database_sync_to_async).
