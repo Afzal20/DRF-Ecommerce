@@ -63,6 +63,13 @@ class ItemViews(generics.ListAPIView):
             "item_color__color",
         )
 
+        category = self.request.query_params.get("category", None)
+        if category:
+            if category.isdigit():
+                queryset = queryset.filter(category_id=int(category))
+            else:
+                queryset = queryset.filter(category__name__iexact=category)
+
         limit = self.request.query_params.get("limit", None)
         if limit is not None:
             try:
