@@ -178,3 +178,16 @@ class TokenVerificationSerializer(serializers.Serializer):
             return {"valid": True, "message": "Token is valid"}
         except (InvalidToken, TokenError):
             return {"valid": False, "message": "Invalid or expired token"}
+
+
+class LogoutSerializer(serializers.Serializer):
+    refresh = serializers.CharField(
+        required=False,
+        allow_blank=True,
+        help_text="Refresh token to blacklist upon logout (can also be passed as refresh_token or in cookies).",
+    )
+    refresh_token = serializers.CharField(
+        required=False,
+        allow_blank=True,
+        help_text="Alternative parameter name for the refresh token.",
+    )

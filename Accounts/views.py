@@ -7,12 +7,14 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 # create a custom user login view and save the login credentials in cookies
+from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenRefreshView, TokenVerifyView
 
 from Accounts.serializers import (
     ChangePasswordSerializer,
     GoogleLoginSerializer,
+    LogoutSerializer,
     OtpVarificationSerializer,
     PasswordResetSerializer,
     ResetPasswordRequestSerializer,
@@ -229,8 +231,12 @@ class CustomTokenRefreshView(TokenRefreshView):
     """
 
     def post(self, request, *args, **kwargs):
-        # Try to get refresh token from cookie
-        refresh_token = request.COOKIES.get("refresh_token")
+        # Try to get refresh token from cookie or request body
+        refresh_token = (
+            request.COOKIES.get("refresh_token")
+            or request.data.get("refresh")
+            or request.data.get("refresh_token")
+        )
 
         if not refresh_token:
             return Response(
@@ -335,12 +341,37 @@ class CustomTokenVerifyView(TokenVerifyView):
 
 class LogoutView(APIView):
     """
-    View to handle user logout. it should delete the access and refresh tokens from cookies.
+    View to handle user logout. It blacklists the refresh token and deletes the access and refresh tokens from cookies.
     """
 
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.AllowAny]
+    serializer_class = LogoutSerializer
 
+    @swagger_auto_schema(
+        request_body=LogoutSerializer,
+        responses={
+            200: openapi.Response(
+                description="Logged out successfully",
+                schema=openapi.Schema(
+                    type=openapi.TYPE_OBJECT,
+                    properties={"detail": openapi.Schema(type=openapi.TYPE_STRING)},
+                ),
+            )
+        },
+    )
     def post(self, request, *args, **kwargs):
+        refresh_token = (
+            request.data.get("refresh")
+            or request.data.get("refresh_token")
+            or request.COOKIES.get("refresh_token")
+        )
+
+        if refresh_token:
+            try:
+                token = RefreshToken(refresh_token)
+                token.blacklist()
+            except TokenError:
+                pass
 
         response = Response(
             {"detail": "Logged out successfully"}, status=status.HTTP_200_OK
